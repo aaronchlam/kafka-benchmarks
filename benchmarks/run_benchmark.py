@@ -19,14 +19,13 @@ def create_topic(zookeeper, topic, replication_factor=1, partitions=1):
             topic=topic)
     subprocess.call(CMD_TEMPLATE.format(cmd="--create",
         zookeeper=zookeeper, 
-        options_str=options_str), 
-        shell=True)
+        options_str=options_str))
 
 def delete_topic(zookeeper, topic):
     options_str = DELETE_OPT_TEMPLATE.format(topic=topic)
     subprocess.call(CMD_TEMPLATE.format(cmd="--delete", 
         zookeeper=zookeeper,
-        options_str=options_str), shell=True)
+        options_str=options_str))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -53,9 +52,11 @@ if __name__ == "__main__":
 
     time.sleep(10)
 
+    processes = []
+
     if args.instances == 1:
-        run_producer(args.topic, throughput, record_size, total_records,
-                args.producer_config, args.output)
+        processes.append(run_producer(args.topic, throughput, record_size, 
+            total_records, args.producer_config, args.output))
     else:
         dir_path, basename = os.path.split(args.output)
         root, ext = os.path.splitext(basename)
@@ -63,8 +64,11 @@ if __name__ == "__main__":
             output_name = "{root}-{instance}{ext}".format(root=root,
                     instance=i, ext=ext)
             output_path = os.join(dir_path, output_name)
-            run_producer(args.topic, throughput, record_size, total_records,
-                    args.producer_config, output_path)
+            processes.append(run_producer(args.topic, throughput, record_size, 
+                total_records, args.producer_config, output_path))
+
+    for p in processes:
+        p.wait()
 
     delete_topic(args.zookeeper, args.topic)
 
