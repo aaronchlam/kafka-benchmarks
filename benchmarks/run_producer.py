@@ -13,7 +13,7 @@ def run_producer_script(topic, throughput, record_size, total_records,
         producer_config, output):
     records_per_second = throughput / record_size
     with open(os.path.abspath(output), 'w') as output_file:
-        subprocess.call(CMD_TEMPLATE.format(topic=topic,
+        subprocess.Popen(CMD_TEMPLATE.format(topic=topic,
             records_per_second=records_per_second,
             record_size=record_size,
             total_records=total_records,

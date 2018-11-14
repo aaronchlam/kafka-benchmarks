@@ -35,6 +35,7 @@ if __name__ == "__main__":
     parser.add_argument("--throughput", type=str, required=True, help="e.g. 10MB")
     parser.add_argument("--time", type=int, required=True, 
             help="time in seconds, e.g. 60")
+    parser.add_argument("--instances", type=int, required=True)
     parser.add_argument("--output", type=str, required=True)
     parser.add_argument("--producer-config", type=str, required=True)
     parser.add_argument("--zookeeper", type=str, required=True)
@@ -52,8 +53,18 @@ if __name__ == "__main__":
 
     time.sleep(10)
 
-    run_producer(args.topic, throughput, record_size, total_records,
-            args.producer_config, args.output)
+    if args.instances == 1:
+        run_producer(args.topic, throughput, record_size, total_records,
+                args.producer_config, args.output)
+    else:
+        dir_path, basename = os.path.split(args.output)
+        root, ext = os.path.splitext(basename)
+        for i in range(args.instances):
+            output_name = "{root}-{instance}{ext}".format(root=root,
+                    instance=i, ext=ext)
+            output_path = os.join(dir_path, output_name)
+            run_producer(args.topic, throughput, record_size, total_records,
+                    args.producer_config, output_path)
 
     delete_topic(args.zookeeper, args.topic)
 
