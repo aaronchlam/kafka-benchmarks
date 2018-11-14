@@ -19,13 +19,13 @@ def create_topic(zookeeper, topic, replication_factor=1, partitions=1):
             topic=topic)
     subprocess.call(CMD_TEMPLATE.format(cmd="--create",
         zookeeper=zookeeper, 
-        options_str=options_str))
+        options_str=options_str), shell=True)
 
 def delete_topic(zookeeper, topic):
     options_str = DELETE_OPT_TEMPLATE.format(topic=topic)
     subprocess.call(CMD_TEMPLATE.format(cmd="--delete", 
         zookeeper=zookeeper,
-        options_str=options_str))
+        options_str=options_str), shell=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
