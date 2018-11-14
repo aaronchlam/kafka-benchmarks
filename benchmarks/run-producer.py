@@ -18,7 +18,7 @@ def run_producer_script(topic, throughput, record_size, total_records,
             record_size=record_size,
             total_records=total_records,
             producer_config=os.path.abspath(args.producer_config)), 
-            stdout=out, shell=True)
+            stdout=output_file, shell=True)
             
 
 if __name__ == "__main__":
