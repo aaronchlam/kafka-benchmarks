@@ -28,7 +28,7 @@ with open(os.path.abspath(args.output), 'w') as output_file:
     subprocess.call(CMD_TEMPLATE.format(topic=args.topic,
         records_per_second=records_per_second,
         record_size=record_size,
-        num_records=total_records,
+        total_records=total_records,
         producer_config=os.path.abspath(args.producer_config), 
         stdout=output_file))
 
