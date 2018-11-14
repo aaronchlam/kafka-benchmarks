@@ -9,10 +9,8 @@ CMD_TEMPLATE = "kafka-producer-perf-test.sh --topic {topic} " + \
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--topic", type=str, required=True)
-parser.add_argument("--record-size", type=bitmath.integrations.BitmathType,
-        required=True, help="e.g. 256B")
-parser.add_argument("--throughput", type=bitmath.integrations.BitmathType,
-        required=True, help="e.g. 10MB")
+parser.add_argument("--record-size", type=str, required=True, help="e.g. 256B")
+parser.add_argument("--throughput", type=str, required=True, help="e.g. 10MB")
 parser.add_argument("--output", type=str, required=True)
 parser.add_argument("--producer-config", type=str, required=True)
 
@@ -20,8 +18,9 @@ args = parser.parse_args()
 
 with open(os.path.abspath(args.output)) as output_file:
     subprocess.call(CMD_TEMPLATE.format(topic=args.topic,
-        throughput=int(args.throughput.to_Byte()),
-        record_size=int(args.record_size.to_Byte()),
+        throughput=int(bitmath.parse_string(args.throughput).to_Byte),
+        record_size=int(bitmath.parse_string(args.record_size).to_Byte),
         num_records=args.num_records,
         producer_config=os.path.abspath(args.producer_config), 
-        stdout=output_file)
+        stdout=output_file))
+
