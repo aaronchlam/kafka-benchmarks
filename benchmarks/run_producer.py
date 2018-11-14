@@ -26,8 +26,8 @@ if __name__ == "__main__":
     parser.add_argument("--topic", type=str, required=True)
     parser.add_argument("--record-size", type=str, required=True, help="e.g. 256B")
     parser.add_argument("--throughput", type=str, required=True, help="e.g. 10MB")
-    parser.add_argument("--time", type=int, required=True, help="time in
-            seconds, e.g. 60", 
+    parser.add_argument("--time", type=int, required=True, 
+            help="time in seconds, e.g. 60", 
     parser.add_argument("--output", type=str, required=True)
     parser.add_argument("--producer-config", type=str, required=True)
 
