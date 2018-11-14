@@ -10,9 +10,9 @@ CMD_TEMPLATE = "kafka-producer-perf-test.sh --topic {topic} " + \
                "--producer.config {producer_config}"
 
 def run_producer_script(topic, throughput, record_size, total_records,
-        producer_config, output_file):
+        producer_config, output):
     records_per_second = throughput / record_size
-    with open(os.path.abspath(args.output), 'w') as output_file:
+    with open(os.path.abspath(output), 'w') as output_file:
         subprocess.call(CMD_TEMPLATE.format(topic=topic,
             records_per_second=records_per_second,
             record_size=record_size,
@@ -36,3 +36,5 @@ if __name__ == "__main__":
     records_per_second = throughput / record_size
     total_records = records_per_second * 60
 
+    run_producer_script(args.topic, throughput, record_size, total_records,
+            args.producer_config, args.output)
