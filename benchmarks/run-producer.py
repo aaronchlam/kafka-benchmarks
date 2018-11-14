@@ -16,7 +16,7 @@ parser.add_argument("--producer-config", type=str, required=True)
 
 args = parser.parse_args()
 
-with open(os.path.abspath(args.output)) as output_file:
+with open(os.path.abspath(args.output), 'w') as output_file:
     subprocess.call(CMD_TEMPLATE.format(topic=args.topic,
         throughput=int(bitmath.parse_string(args.throughput).to_Byte),
         record_size=int(bitmath.parse_string(args.record_size).to_Byte),
