@@ -30,8 +30,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    throughput=bitmath.parse_string(args.throughput).to_Byte()
-    record_size=bitmath.parse_string(args.record_size).to_Byte()
+    throughput=int(bitmath.parse_string(args.throughput).to_Byte())
+    record_size=int(bitmath.parse_string(args.record_size).to_Byte())
 
     records_per_second = throughput / record_size
     total_records = records_per_second * 60
