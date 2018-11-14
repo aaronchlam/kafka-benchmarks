@@ -48,11 +48,13 @@ if __name__ == "__main__":
     total_records = records_per_second * args.time
 
 
-    delete_topic(args.zookeeper, args.topic)
-    time.sleep(10)
     create_topic(args.zookeeper, args.topic)
+
+    time.sleep(10)
 
     run_producer(args.topic, throughput, record_size, total_records,
             args.producer_config, args.output)
 
     delete_topic(args.zookeeper, args.topic)
+
+    time.sleep(10)
