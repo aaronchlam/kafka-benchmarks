@@ -37,6 +37,7 @@ if __name__ == "__main__":
             help="time in seconds, e.g. 60")
     parser.add_argument("--output", type=str, required=True)
     parser.add_argument("--producer-config", type=str, required=True)
+    parser.add_argument("--zookeeper", type=str, required=True)
 
     args = parser.parse_args()
 
