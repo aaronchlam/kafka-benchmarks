@@ -64,7 +64,7 @@ if __name__ == "__main__":
         for i in range(args.instances):
             output_name = "{root}-{instance}{ext}".format(root=root,
                     instance=i, ext=ext)
-            output_path = os.join(dir_path, output_name)
+            output_path = os.path.join(dir_path, output_name)
             processes.append(run_producer(args.topic, throughput, record_size, 
                 total_records, args.producer_config, output_path))
 
