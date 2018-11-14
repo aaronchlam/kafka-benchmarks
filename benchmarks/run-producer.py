@@ -18,8 +18,8 @@ args = parser.parse_args()
 
 with open(os.path.abspath(args.output), 'w') as output_file:
     subprocess.call(CMD_TEMPLATE.format(topic=args.topic,
-        throughput=int(bitmath.parse_string(args.throughput).to_Byte),
-        record_size=int(bitmath.parse_string(args.record_size).to_Byte),
+        throughput=int(bitmath.parse_string(args.throughput).to_Byte()),
+        record_size=int(bitmath.parse_string(args.record_size).to_Byte()),
         num_records=args.num_records,
         producer_config=os.path.abspath(args.producer_config), 
         stdout=output_file))
