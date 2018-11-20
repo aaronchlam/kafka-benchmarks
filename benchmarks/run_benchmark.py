@@ -3,6 +3,7 @@ import bitmath
 import subprocess
 import os
 import time
+from datetime import datetime as dt
 
 from run_producer import run_producer_script as run_producer
 
@@ -27,6 +28,7 @@ def delete_topic(zookeeper, topic):
     subprocess.call(CMD_TEMPLATE.format(cmd="--delete", 
         zookeeper=zookeeper,
         options_str=options_str), shell=True)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -55,6 +57,8 @@ if __name__ == "__main__":
 
     processes = []
 
+    print("Benchmark begins: {}".format(dt.now()))
+
     if args.instances == 1:
         processes.append(run_producer(args.topic, throughput, record_size, 
             total_records, args.producer_config, args.output))
@@ -70,6 +74,8 @@ if __name__ == "__main__":
 
     for p in processes:
         p.wait()
+
+    print("Benchmark finished: {}".format(dt.now()))
 
     delete_topic(args.zookeeper, args.topic)
 
