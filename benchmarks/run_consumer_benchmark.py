@@ -44,6 +44,7 @@ if __name__ == "__main__":
     parser.add_argument("--instances", type=int, required=True)
     parser.add_argument("--output", type=str, required=True)
     parser.add_argument("--broker", type=str, required=True)
+    parser.add_argument("--zookeeper", type=str, required=True)
 
     args = parser.parse_args()
 
