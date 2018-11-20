@@ -5,6 +5,8 @@ import os
 import time
 from datetime import datetime as dt
 
+from run_producer_benchmark import create_topic, delete_topic
+
 REPORTING_INTERVAL = 5000 # Report every 5 seconds
 TIMEOUT = 30000
 
