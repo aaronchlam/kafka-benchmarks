@@ -27,7 +27,7 @@ def run_consumer_script(topic, broker, fetch_size, messages, reporting_interval,
             broker=broker,
             reporting_interval=reporting_interval,
             messages=messages,
-            timout=timout),
+            timeout=timeout),
             stdout=output_file, shell=True)
     return p
 
