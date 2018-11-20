@@ -21,7 +21,7 @@ CMD_TEMPLATE = "kafka-consumer-perf-test.sh --topic {topic} " + \
 
 
 def run_consumer_script(topic, broker, fetch_size, messages, reporting_interval,
-        messges, timeout):
+        messages, timeout, output):
     with open(os.path.abspath(output), 'w') as output_file:
         p = subprocess.Popen(CMD_TEMPLATE.format(topic=topic,
             broker=broker,
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     if args.instances == 1:
         processes.append(run_consumer_script(args.topic, args.broker, 
-            fetch_size, total_records, REPORTING_INTERVAL, args.output, TIMEOUT))
+            fetch_size, total_records, REPORTING_INTERVAL, TIMEOUT, args.output))
     else:
         dir_path, basename = os.path.split(args.output)
         root, ext = os.path.splitext(basename)
@@ -73,7 +73,7 @@ if __name__ == "__main__":
                     instance=i, ext=ext)
             output_path = os.path.join(dir_path, output_name)
         processes.append(run_consumer_script(args.topic, args.broker, 
-            fetch_size, total_records, REPORTING_INTERVAL, output_path, TIMEOUT))
+            fetch_size, total_records, REPORTING_INTERVAL, TIMEOUT, output_path))
 
     for p in processes:
         p.wait()
