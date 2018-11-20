@@ -57,8 +57,6 @@ if __name__ == "__main__":
 
     create_topic(args.zookeeper, args.topic)
 
-    time.sleep(10)
-
     processes = []
 
     print("Benchmark begins: {}".format(dt.now()))
