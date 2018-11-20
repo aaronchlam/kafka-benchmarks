@@ -25,6 +25,7 @@ def run_consumer_script(topic, broker, fetch_size, messages, reporting_interval,
     with open(os.path.abspath(output), 'w') as output_file:
         p = subprocess.Popen(CMD_TEMPLATE.format(topic=topic,
             broker=broker,
+            fetch_size=fetch_size,
             reporting_interval=reporting_interval,
             messages=messages,
             timeout=timeout),
