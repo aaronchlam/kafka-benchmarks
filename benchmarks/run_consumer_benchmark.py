@@ -63,7 +63,7 @@ if __name__ == "__main__":
     print("Benchmark begins: {}".format(dt.now()))
 
     if args.instances == 1:
-        processes.append(run_producer_script(args.topic, args.broker, 
+        processes.append(run_consumer_script(args.topic, args.broker, 
             fetch_size, total_records, REPORTING_INTERVAL, args.output, TIMEOUT))
     else:
         dir_path, basename = os.path.split(args.output)
@@ -72,7 +72,7 @@ if __name__ == "__main__":
             output_name = "{root}-{instance}{ext}".format(root=root,
                     instance=i, ext=ext)
             output_path = os.path.join(dir_path, output_name)
-        processes.append(run_producer_script(args.topic, args.broker, 
+        processes.append(run_consumer_script(args.topic, args.broker, 
             fetch_size, total_records, REPORTING_INTERVAL, output_path, TIMEOUT))
 
     for p in processes:
