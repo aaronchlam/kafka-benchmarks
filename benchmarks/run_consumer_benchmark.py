@@ -16,7 +16,7 @@ CMD_TEMPLATE = "kafka-consumer-perf-test.sh --topic {topic} " + \
                "--from-latest " + \
                "--reporting-interval {reporting_interval} " + \
                "--messages {messages} " + \
-               "--show-detailed-stat " + \
+               "--show-detailed-stats " + \
                "--timeout {timeout} "
 
 
