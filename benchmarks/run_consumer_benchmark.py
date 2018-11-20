@@ -77,6 +77,3 @@ if __name__ == "__main__":
 
     print("Benchmark finished: {}".format(dt.now()))
 
-    delete_topic(args.zookeeper, args.topic)
-
-    time.sleep(10)
