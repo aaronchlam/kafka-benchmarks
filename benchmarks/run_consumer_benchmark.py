@@ -13,11 +13,11 @@ TIMEOUT = 30000
 CMD_TEMPLATE = "kafka-consumer-perf-test.sh --topic {topic} " + \
                "--broker-list {broker} " + \
                "--fetch-size {fetch_size} " + \
-               "--from-latest" + \
-               "--reporting-interval {reporting_interval}" + \
+               "--from-latest " + \
+               "--reporting-interval {reporting_interval} " + \
                "--messages {messages} " + \
-               "--show-detailed-stat" + \
-               "--timeout {timeout}"
+               "--show-detailed-stat " + \
+               "--timeout {timeout} "
 
 
 def run_consumer_script(topic, broker, fetch_size, messages, reporting_interval,
