@@ -71,8 +71,8 @@ if __name__ == "__main__":
             output_name = "{root}-{instance}{ext}".format(root=root,
                     instance=i, ext=ext)
             output_path = os.path.join(dir_path, output_name)
-        processes.append(run_consumer_script(args.topic, args.broker, 
-            fetch_size, total_records, REPORTING_INTERVAL, TIMEOUT, output_path))
+            processes.append(run_consumer_script(args.topic, args.broker, 
+                fetch_size, total_records, REPORTING_INTERVAL, TIMEOUT, output_path))
 
     for p in processes:
         p.wait()
