@@ -26,16 +26,17 @@ def open_ssh(hostname):
     return client
 
 
-def mkdir_benchmark_results(num_replicas, num_producers, num_consumers):
+def mkdir_benchmark_results(num_replicas, num_producers, num_consumers, producer_throughput):
     mkdir_path = os.path.join(DATA_DIR, '{}-replicas'.format(num_replicas),
                                          '{}-producers'.format(num_producers), '{}-consumers'.format(num_consumers))
     print('Making directory... {}'.format(mkdir_path))
 
-    ssh_client = open_ssh(producers[0])
-    ssh_client.exec_command(mkdir_path)
+    os.mkdir(mkdir_path)
 
 
 if __name__ == '__main__':
     brokers = get_hostnames(BROKERS_FILE)
     consumers = get_hostnames(CONSUMERS_FILE)
     producers = get_hostnames(PRODUCERS_FILE)
+
+    mkdir_benchmark_results(1, 1, 1, 5)
