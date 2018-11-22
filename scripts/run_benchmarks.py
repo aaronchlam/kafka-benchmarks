@@ -6,9 +6,9 @@ DATA_DIR = '/home/achlam/kafka-benchmarks/data'
 
 USERNAME = 'achlam'
 
-BROKERS_FILE = './brokers'
-CONSUMERS_FILE = './consumers'
-PRODUCERS_FILE = './producers'
+BROKERS_FILE = 'brokers'
+CONSUMERS_FILE = 'consumers'
+PRODUCERS_FILE = 'producers'
 
 
 def get_hostnames(filename):
@@ -28,15 +28,16 @@ def open_ssh(hostname):
 
 def mkdir_benchmark_results(num_replicas, num_producers, num_consumers, producer_throughput):
     mkdir_path = os.path.join(DATA_DIR, '{}-replicas'.format(num_replicas),
-                                         '{}-producers'.format(num_producers), '{}-consumers'.format(num_consumers))
+                              '{}-producers'.format(num_producers), '{}-consumers'.format(num_consumers))
     print('Making directory... {}'.format(mkdir_path))
 
-    os.mkdir(mkdir_path)
+    os.makedirs(mkdir_path, exist_ok=True)
 
 
 if __name__ == '__main__':
-    brokers = get_hostnames(BROKERS_FILE)
-    consumers = get_hostnames(CONSUMERS_FILE)
-    producers = get_hostnames(PRODUCERS_FILE)
+    scripts_dir = os.path.dirname(os.path.realpath(__file__))
+    brokers = get_hostnames(os.path.join(scripts_dir, BROKERS_FILE))
+    consumers = get_hostnames(os.path.join(scripts_dir, CONSUMERS_FILE))
+    producers = get_hostnames(os.path.join(scripts_dir, PRODUCERS_FILE))
 
     mkdir_benchmark_results(1, 1, 1, 5)
