@@ -1,6 +1,7 @@
 import argparse
 import os
 import subprocess
+import time
 
 import bitmath
 from run_producer import run_producer_script as run_producer
@@ -52,6 +53,8 @@ if __name__ == "__main__":
 
     processes = []
 
+    print("Running producer benchmark")
+
     if args.instances == 1:
         processes.append(run_producer(args.topic, throughput, record_size,
                                       total_records, args.producer_config, args.output))
@@ -67,3 +70,7 @@ if __name__ == "__main__":
 
     for p in processes:
         p.wait()
+
+    print("Sleeping in the producer benchmark")
+    time.sleep(60)
+    print("Done sleeping")
