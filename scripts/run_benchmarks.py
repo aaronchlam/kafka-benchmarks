@@ -92,7 +92,7 @@ def start_vmstats(hosts, data_dir):
 
     for host in hosts:
         client = open_ssh(host)
-        vmstat_file_path = os.path.join(data_dir, 'vmstat_{}.txt'.format(host))
+        vmstat_file_path = os.path.join(data_dir, 'vmstat-{}.txt'.format(host))
         stdin, stdout, stderr = client.exec_command(VMSTAT_START_CMD.format(path=vmstat_file_path))
         channels.append(stdout.channel)
 
@@ -181,6 +181,8 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
         if exit_status != 0:
             for line in consumer_stds[consumer][1].readlines():
                 print(line)
+            for line in consumer_stds[consumer][2].readlines():
+                print("error: {}".format(line))
         client = consumer_clients[consumer].close()
 
     # end vmstat
