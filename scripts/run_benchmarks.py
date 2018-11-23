@@ -30,6 +30,9 @@ python {py_cmd}
 RUN_PRODUCER_BENCHMARK_TEMPLATE = 'benchmarks/run_producer_benchmark.py --topic {topic} --record-size {size} ' + \
                                   '--throughput {throughput} --time {time} --instances {instances} ' + \
                                   '--producer-config {config} --zookeeper {zookeeper} --output {output}'
+RUN_CONSUMER_BENCHMARK_TEMPLATE = 'benchmarks/run consumer_benchmark.py --topic {topic} --fetch-size {size} ' + \
+                                  '--throughput {throughput} --time {time} --instances {instances} ' + \
+                                  '--output {output} --broker {broker} --zookeeper {zookeeper}'
 
 
 BENCHMARK_TOPIC = 'benchmark-topic'
@@ -115,7 +118,7 @@ def stop_vmstats(hosts):
 
 def run_producer_benchmark_script(producers, producer_throughput, zookeeper, data_dir):
     throughput_string = '{}MB'.format(producer_throughput)
-    output_path = os.path.join(data_dir, 'producer.txt')
+    output_path = os.path.join(data_dir, 'producer.txt')    # TODO: generalize here for more producers
     py_cmd = RUN_PRODUCER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE,
                                                     throughput=throughput_string, time=BENCHMARK_LENGTH,
                                                     instances=1, zookeeper=zookeeper, output=output_path,
@@ -127,12 +130,31 @@ def run_producer_benchmark_script(producers, producer_throughput, zookeeper, dat
     stds = {}
     for producer in producers:
         clients[producer] = open_ssh(producer)
-        stds[producer] = clients[producer].exec_command(SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd))
+        stds[producer] = clients[producer].exec_command(ssh_cmds)
 
     return clients, stds
 
 
-def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumers, producer_throughput):
+def run_consumer_benchmark_script(consumers, instances, producer_throughput, broker, zookeeper, data_dir):
+    clients = {}
+    stds = {}
+
+    for consumer in consumers:
+        output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))
+        py_cmd = RUN_CONSUMER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE, time=BENCHMARK_LENGTH,
+                                                        throughput=producer_throughput, zookeeper=zookeeper,
+                                                        output=output_path, instances=instances, broker=broker)
+        print(py_cmd)
+        ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd)
+        print(ssh_cmds)
+
+        clients[consumer] = open_ssh(consumer)
+        stds[consumer] = clients[consumer].exec_command(ssh_cmds)
+
+    return clients, stds
+
+
+def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumers, consumer_instances, producer_throughput):
     # create test result directory
     data_dir = mkdir_benchmark_results(len(brokers), len(producers), len(consumers), producer_throughput, trial)
 
@@ -146,13 +168,16 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
     producer_clients, producer_stds = run_producer_benchmark_script(producers, producer_throughput, zookeeper, data_dir)
 
     # run the consumer_benchmark_scripts
+    consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, consumer_instances, producer_throughput, brokers[0],
+                                                                    zookeeper, data_dir)
 
     for producer in producers:
         exit_status = producer_stds[producer][1].channel.recv_exit_status()
-        for line in producer_stds[producer][1].readlines():
-            print(line)
-        print('producer {} exit code: {}'.format(producer, exit_status))
         client = producer_clients[producer].close()
+
+    for consumer in consumers:
+        exit_statuss = consumer_stds[consumer][1].channel.recv_exit_status()
+        client = consumer_clients[consumer].close()
 
     # end vmstat
     stop_vmstats(brokers)
@@ -173,6 +198,6 @@ if __name__ == '__main__':
     print('consumers: {}'.format(consumers))
     print('producers: {}'.format(producers))
 
-    run_producer_throughput_trial(zookeepers[0], 0, brokers, producers, consumers, 5)
+    run_producer_throughput_trial(zookeepers[0], 0, brokers, producers, consumers, 1, 5)
     # run_producer_benchmark_script(producers, 5, 'tem07', '/bullshit/dir')
 
