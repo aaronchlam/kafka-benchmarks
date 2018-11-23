@@ -147,9 +147,7 @@ def run_consumer_benchmark_script(consumers, instances, producer_throughput, bro
                                                         throughput=throughput_string, zookeeper=zookeeper,
                                                         output=output_path, instances=instances,
                                                         broker='{}:9092'.format(consumer_ip))
-        print(py_cmd)
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
-        print(ssh_cmds)
 
         clients[consumer] = open_ssh(consumer)
         stds[consumer] = clients[consumer].exec_command(ssh_cmds)
@@ -175,17 +173,16 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
                                                                     zookeeper, data_dir)
 
     for producer in producers:
+        print("wiating on producers to finish")
         exit_status = producer_stds[producer][1].channel.recv_exit_status()
         client = producer_clients[producer].close()
+        print("done producers")
 
     for consumer in consumers:
+        print("waiting on consumers to finish")
         exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
         print("consumer exit status: {}".format(exit_status))
-        if exit_status != 0:
-            for line in consumer_stds[consumer][1].readlines():
-                print(line)
-            for line in consumer_stds[consumer][2].readlines():
-                print("error: {}".format(line))
+
         client = consumer_clients[consumer].close()
 
     # end vmstat
