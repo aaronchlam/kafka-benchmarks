@@ -84,7 +84,8 @@ def start_vmstats(hosts, data_dir):
 
     for channel in channels:
         exit_status = channel.recv_exit_status()
-        client.close()
+
+    client.close()
 
 
 def stop_vmstats(hosts):
@@ -97,7 +98,8 @@ def stop_vmstats(hosts):
 
     for channel in channels:
         exit_status = channel.recv_exit_status()
-        client.close()
+
+    client.close()
 
 
 def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumers, producer_throughput):
@@ -110,7 +112,6 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
     # start vmstat
     start_vmstats(brokers, data_dir)
 
-    time.sleep(20)
 
     # end vmstat
     stop_vmstats(producers)
