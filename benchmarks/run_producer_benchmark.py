@@ -72,5 +72,5 @@ if __name__ == "__main__":
         p.wait()
 
     print("Sleeping in the producer benchmark")
-    time.sleep(60)
+    time.sleep(5)
     print("Done sleeping")
