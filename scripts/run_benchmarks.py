@@ -134,18 +134,18 @@ def run_producer_benchmark_script(producers, producer_throughput, zookeeper, dat
 
 
 def run_consumer_benchmark_script(consumers, instances, producer_throughput, broker, zookeeper, data_dir):
+    broker_ip = socket.gethostbyname(broker)
     throughput_string = '{}MB'.format(producer_throughput)
 
     clients = {}
     stds = {}
 
     for consumer in consumers:
-        consumer_ip = socket.gethostbyname(consumer)
         output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))
         py_cmd = RUN_CONSUMER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE, time=BENCHMARK_LENGTH,
                                                         throughput=throughput_string, zookeeper=zookeeper,
                                                         output=output_path, instances=instances,
-                                                        broker='{}:9092'.format(consumer_ip))
+                                                        broker='{}:9092'.format(broker_ip))
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
         print(ssh_cmds)
 
