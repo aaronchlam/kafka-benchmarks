@@ -49,7 +49,7 @@ if __name__ == "__main__":
     record_size = int(bitmath.parse_string(args.record_size).to_Byte())
 
     records_per_second = throughput / record_size
-    total_records = records_per_second * args.time
+    total_records = int(records_per_second * args.time)
 
     processes = []
 
