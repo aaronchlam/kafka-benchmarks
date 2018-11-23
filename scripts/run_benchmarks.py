@@ -145,7 +145,7 @@ def run_consumer_benchmark_script(consumers, instances, producer_throughput, bro
                                                         throughput=producer_throughput, zookeeper=zookeeper,
                                                         output=output_path, instances=instances, broker=broker)
         print(py_cmd)
-        ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd)
+        ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
         print(ssh_cmds)
 
         clients[consumer] = open_ssh(consumer)
