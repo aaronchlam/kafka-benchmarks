@@ -76,7 +76,7 @@ def start_vmstats(hosts, data_dir):
 
     for host in hosts:
         client = open_ssh(host)
-        stdin, stdout, stderr = client.exec_command(VMSTAT_START_CMD.format(data_dir))
+        stdin, stdout, stderr = client.exec_command(VMSTAT_START_CMD.format(path=data_dir))
         channels.append(stdout.channel)
 
     for channel in channels:
