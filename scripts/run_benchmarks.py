@@ -22,9 +22,22 @@ DELETE_OPT_TEMPLATE = "--topic {topic}"
 
 VMSTAT_START_CMD = 'vmstat -n -t -S M 1 3600 > {path}'
 
+SSH_NODE_PY_CMD_TEMPLATE = '''
+        cd kafka-benchmarks/
+        . venv/bin/activate
+        {py_cmd}
+        '''
+RUN_PRODUCER_BENCHMARK_TEMPLATE = 'benchmarks/run_producer_benchmark.py --topic {topic} --record-size {size} ' + \
+                                  '--throughput {throughput} --time {time} --instances {instances} ' + \
+                                  '--producer-config {config} --zookeeper [zookeeper} --output {output}'
+
 
 BENCHMARK_TOPIC = 'benchmark-topic'
-BENCHMARK_LENTH = '300' # 5 minutes
+BENCHMARK_LENGTH = 60   # 5 minutes
+RECORD_SIZE = '512B'
+
+CONFIG_DIR = os.path.join(os.getcwd(), 'config')
+PRODUCER_CONFIG = os.path.join(CONFIG_DIR, 'producer.properties')
 
 
 def get_hostnames(filename):
@@ -102,6 +115,22 @@ def stop_vmstats(hosts):
     client.close()
 
 
+def run_producer_benchmark_script(producers, producer_throughput, zookeeper, data_dir):
+    output_path = os.path.join(data_dir, 'producer.txt')
+    py_cmd = RUN_PRODUCER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE,
+                                                    throughput='{}MB'.format(producer_throughput),
+                                                    time=BENCHMARK_LENGTH, instances=1, zookeeper=zookeeper,
+                                                    output=output_path)
+
+    clients = {}
+    stds = {}
+    for producer in producers:
+        clients[producer] = open_ssh(producer)
+        stds[producer] = clients[producer].exec_command(SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd))
+
+    return clients, stds
+
+
 def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumers, producer_throughput):
     # create test result directory
     data_dir = mkdir_benchmark_results(len(brokers), len(producers), len(consumers), producer_throughput, trial)
@@ -112,6 +141,14 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
     # start vmstat
     start_vmstats(brokers, data_dir)
 
+    # run the producer_benchmark_scripts
+    producer_clients, producer_stds = run_producer_benchmark_script(producers, producer_throughput, zookeeper, data_dir)
+
+    # run the consumer_benchmark_scripts
+
+    for producer in producers:
+        exit_status = producer_stds[producer][1].channel.recv_exit_status()
+        client = producer_clients[producer].close()
 
     # end vmstat
     stop_vmstats(producers)

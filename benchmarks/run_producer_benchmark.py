@@ -3,7 +3,7 @@ import os
 import subprocess
 
 import bitmath
-from .run_producer import run_producer_script as run_producer
+from run_producer import run_producer_script as run_producer
 
 CMD_TEMPLATE = "kafka-topics.sh {cmd} --zookeeper {zookeeper}  {options_str}"
 
