@@ -149,10 +149,11 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
 
     for producer in producers:
         exit_status = producer_stds[producer][1].channel.recv_exit_status()
+        print('producer {} exit code: {}'.format(producer, exit_status))
         client = producer_clients[producer].close()
 
     # end vmstat
-    stop_vmstats(producers)
+    stop_vmstats(brokers)
 
     # delete kafka topic
     delete_topic(zookeeper, BENCHMARK_TOPIC)
