@@ -122,7 +122,7 @@ def run_producer_benchmark_script(producers, producer_throughput, zookeeper, dat
     py_cmd = RUN_PRODUCER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE,
                                                     throughput='{}MB'.format(producer_throughput),
                                                     time=BENCHMARK_LENGTH, instances=1, zookeeper=zookeeper,
-                                                    output=output_path)
+                                                    output=output_path, config=PRODUCER_CONFIG)
 
     clients = {}
     stds = {}
