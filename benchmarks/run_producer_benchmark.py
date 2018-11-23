@@ -69,7 +69,8 @@ if __name__ == "__main__":
                                           total_records, args.producer_config, output_path))
 
     for p in processes:
-        p.wait()
+        exit_code = p.wait()
+        print("Exit code: {}".format(exit_code))
 
     print("Sleeping in the producer benchmark")
     time.sleep(5)
