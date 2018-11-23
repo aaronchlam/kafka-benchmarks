@@ -170,6 +170,6 @@ if __name__ == '__main__':
     print('consumers: {}'.format(consumers))
     print('producers: {}'.format(producers))
 
-    # run_producer_throughput_trial(zookeepers[0], 0, brokers, producers, consumers, 5)
-    run_producer_benchmark_script(producers, 5, 'tem07', '/bullshit/dir')
+    run_producer_throughput_trial(zookeepers[0], 0, brokers, producers, consumers, 5)
+    # run_producer_benchmark_script(producers, 5, 'tem07', '/bullshit/dir')
 
