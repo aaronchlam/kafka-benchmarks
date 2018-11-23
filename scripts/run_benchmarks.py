@@ -1,7 +1,6 @@
 import os
 import subprocess
-import time
-
+import socket
 import paramiko
 
 DATA_DIR = '/home/achlam/kafka-benchmarks/data'
@@ -142,10 +141,12 @@ def run_consumer_benchmark_script(consumers, instances, producer_throughput, bro
     stds = {}
 
     for consumer in consumers:
+        consumer_ip = socket.gethostbyname(consumer)
         output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))
         py_cmd = RUN_CONSUMER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE, time=BENCHMARK_LENGTH,
                                                         throughput=throughput_string, zookeeper=zookeeper,
-                                                        output=output_path, instances=instances, broker=broker)
+                                                        output=output_path, instances=instances,
+                                                        broker='{}:9092'.format(consumer_ip))
         print(py_cmd)
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
         print(ssh_cmds)
