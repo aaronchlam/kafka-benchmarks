@@ -97,9 +97,9 @@ def stop_vmstats(hosts):
         client.close()
 
 
-def run_producer_throughput_trial(zookeeper, trial, num_replicas, producers, num_consumers, producer_throughput):
+def run_producer_throughput_trial(zookeeper, trial, num_replicas, producers, consumers, producer_throughput):
     # create test result directory
-    data_dir = mkdir_benchmark_results(num_replicas, len(producers), num_consumers, producer_throughput, trial)
+    data_dir = mkdir_benchmark_results(num_replicas, len(producers), len(consumers), producer_throughput, trial)
 
     # create kafka topic
     create_topic(zookeeper, BENCHMARK_TOPIC, replication_factor=num_replicas)
@@ -128,5 +128,5 @@ if __name__ == '__main__':
     print('consumers: {}'.format(consumers))
     print('producers: {}'.format(producers))
 
-    run_producer_throughput_trial(zookeepers[0], 0, 1, 1, 1, 5)
+    run_producer_throughput_trial(zookeepers[0], 0, 1, producers, consumers, 5)
 
