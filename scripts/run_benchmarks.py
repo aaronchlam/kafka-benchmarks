@@ -25,7 +25,7 @@ VMSTAT_START_CMD = 'vmstat -n -t -S M 1 3600 > {path} &'
 SSH_NODE_PY_CMD_TEMPLATE = '''
 cd kafka-benchmarks/;
 . venv/bin/activate;
-{py_cmd}
+python {py_cmd}
 '''
 RUN_PRODUCER_BENCHMARK_TEMPLATE = 'benchmarks/run_producer_benchmark.py --topic {topic} --record-size {size} ' + \
                                   '--throughput {throughput} --time {time} --instances {instances} ' + \
