@@ -176,7 +176,11 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
         client = producer_clients[producer].close()
 
     for consumer in consumers:
-        exit_statuss = consumer_stds[consumer][1].channel.recv_exit_status()
+        exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
+        print("consumer exit status: {}".format(exit_status))
+        if exit_status != 0:
+            for line in consumer_stds[consumer][1].readlines():
+                print(line)
         client = consumer_clients[consumer].close()
 
     # end vmstat
