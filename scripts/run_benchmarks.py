@@ -29,7 +29,7 @@ SSH_NODE_PY_CMD_TEMPLATE = '''
         '''
 RUN_PRODUCER_BENCHMARK_TEMPLATE = 'benchmarks/run_producer_benchmark.py --topic {topic} --record-size {size} ' + \
                                   '--throughput {throughput} --time {time} --instances {instances} ' + \
-                                  '--producer-config {config} --zookeeper [zookeeper} --output {output}'
+                                  '--producer-config {config} --zookeeper {zookeeper} --output {output}'
 
 
 BENCHMARK_TOPIC = 'benchmark-topic'
@@ -93,12 +93,8 @@ def start_vmstats(hosts, data_dir):
         stdin, stdout, stderr = client.exec_command(VMSTAT_START_CMD.format(path=vmstat_file_path))
         channels.append(stdout.channel)
 
-    print("done starting vmstat")
-
     for channel in channels:
         exit_status = channel.recv_exit_status()
-
-    print("cl")
 
     client.close()
 
@@ -118,11 +114,12 @@ def stop_vmstats(hosts):
 
 
 def run_producer_benchmark_script(producers, producer_throughput, zookeeper, data_dir):
+    throughput_string = '{}MB'.format(producer_throughput)
     output_path = os.path.join(data_dir, 'producer.txt')
     py_cmd = RUN_PRODUCER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE,
-                                                    throughput='{}MB'.format(producer_throughput),
-                                                    time=BENCHMARK_LENGTH, instances=1, zookeeper=zookeeper,
-                                                    output=output_path, config=PRODUCER_CONFIG)
+                                                    throughput=throughput_string, time=BENCHMARK_LENGTH,
+                                                    instances=1, zookeeper=zookeeper, output=output_path,
+                                                    config=PRODUCER_CONFIG)
 
     clients = {}
     stds = {}
@@ -172,4 +169,5 @@ if __name__ == '__main__':
     print('producers: {}'.format(producers))
 
     run_producer_throughput_trial(zookeepers[0], 0, brokers, producers, consumers, 5)
+    #run_producer_benchmark_script(producers, 5, 'tem07', '/bullshit/dir')
 
