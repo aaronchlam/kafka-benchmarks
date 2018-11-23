@@ -76,7 +76,10 @@ def start_vmstats(hosts, data_dir):
 
     for host in hosts:
         client = open_ssh(host)
-        stdin, stdout, stderr = client.exec_command(VMSTAT_START_CMD.format(path=data_dir))
+        vmstat_file_path = os.path.join(data_dir, 'vmstat_{}.txt'.format(host))
+        stdin, stdout, stderr = client.exec_command(VMSTAT_START_CMD.format(path=vmstat_file_path))
+        for lin in stdout:
+            print(lin)
         channels.append(stdout.channel)
 
     for channel in channels:
@@ -97,15 +100,15 @@ def stop_vmstats(hosts):
         client.close()
 
 
-def run_producer_throughput_trial(zookeeper, trial, num_replicas, producers, consumers, producer_throughput):
+def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumers, producer_throughput):
     # create test result directory
-    data_dir = mkdir_benchmark_results(num_replicas, len(producers), len(consumers), producer_throughput, trial)
+    data_dir = mkdir_benchmark_results(len(brokers), len(producers), len(consumers), producer_throughput, trial)
 
     # create kafka topic
-    create_topic(zookeeper, BENCHMARK_TOPIC, replication_factor=num_replicas)
+    create_topic(zookeeper, BENCHMARK_TOPIC, replication_factor=len(brokers))
 
     # start vmstat
-    start_vmstats(producers, data_dir)
+    start_vmstats(brokers, data_dir)
 
     time.sleep(20)
 
