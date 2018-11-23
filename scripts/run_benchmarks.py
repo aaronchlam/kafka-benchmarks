@@ -20,7 +20,7 @@ CREATE_OPT_TEMPLATE = "--replication-factor {replication_factor} " + \
                       "--topic {topic}"
 DELETE_OPT_TEMPLATE = "--topic {topic}"
 
-VMSTAT_START_CMD = 'vmstat -n -t -S M 1 3600 > {path}'
+VMSTAT_START_CMD = 'vmstat -n -t -S M 1 3600 > {path} &'
 
 SSH_NODE_PY_CMD_TEMPLATE = '''
         cd kafka-benchmarks/
@@ -93,8 +93,12 @@ def start_vmstats(hosts, data_dir):
         stdin, stdout, stderr = client.exec_command(VMSTAT_START_CMD.format(path=vmstat_file_path))
         channels.append(stdout.channel)
 
+    print("done starting vmstat")
+
     for channel in channels:
         exit_status = channel.recv_exit_status()
+
+    print("cl")
 
     client.close()
 
