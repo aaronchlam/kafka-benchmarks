@@ -21,12 +21,6 @@ CMD_TEMPLATE = "kafka-consumer-perf-test.sh --topic {topic} " + \
 def run_consumer_script(topic, broker, fetch_size, messages, reporting_interval,
                         timeout, output):
     with open(os.path.abspath(output), 'w') as output_file:
-        print(CMD_TEMPLATE.format(topic=topic,
-                                  broker=broker,
-                                  fetch_size=fetch_size,
-                                  reporting_interval=reporting_interval,
-                                  messages=messages,
-                                  timeout=timeout))
         p = subprocess.Popen(CMD_TEMPLATE.format(topic=topic,
                                                  broker=broker,
                                                  fetch_size=fetch_size,
