@@ -23,10 +23,10 @@ DELETE_OPT_TEMPLATE = "--topic {topic}"
 VMSTAT_START_CMD = 'vmstat -n -t -S M 1 3600 > {path} &'
 
 SSH_NODE_PY_CMD_TEMPLATE = '''
-        cd kafka-benchmarks/
-        . venv/bin/activate
-        {py_cmd}
-        '''
+cd kafka-benchmarks/;
+. venv/bin/activate;
+{py_cmd}
+'''
 RUN_PRODUCER_BENCHMARK_TEMPLATE = 'benchmarks/run_producer_benchmark.py --topic {topic} --record-size {size} ' + \
                                   '--throughput {throughput} --time {time} --instances {instances} ' + \
                                   '--producer-config {config} --zookeeper {zookeeper} --output {output}'
@@ -120,6 +120,8 @@ def run_producer_benchmark_script(producers, producer_throughput, zookeeper, dat
                                                     throughput=throughput_string, time=BENCHMARK_LENGTH,
                                                     instances=1, zookeeper=zookeeper, output=output_path,
                                                     config=PRODUCER_CONFIG)
+    ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
+    print(ssh_cmds)
 
     clients = {}
     stds = {}
@@ -168,6 +170,6 @@ if __name__ == '__main__':
     print('consumers: {}'.format(consumers))
     print('producers: {}'.format(producers))
 
-    run_producer_throughput_trial(zookeepers[0], 0, brokers, producers, consumers, 5)
-    #run_producer_benchmark_script(producers, 5, 'tem07', '/bullshit/dir')
+    # run_producer_throughput_trial(zookeepers[0], 0, brokers, producers, consumers, 5)
+    run_producer_benchmark_script(producers, 5, 'tem07', '/bullshit/dir')
 
