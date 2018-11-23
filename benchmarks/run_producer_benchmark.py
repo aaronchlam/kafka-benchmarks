@@ -56,6 +56,10 @@ if __name__ == "__main__":
     print("Running producer benchmark")
 
     if args.instances == 1:
+        print("throughput: {}".format(throughput))
+        print("record_siz: {}".format(record_size))
+        print("records_per_second: {}".format(records_per_second))
+        print("total_records: {}".format(total_records))
         processes.append(run_producer(args.topic, throughput, record_size,
                                       total_records, args.producer_config, args.output))
     else:
