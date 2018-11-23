@@ -149,7 +149,7 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
 
     for producer in producers:
         exit_status = producer_stds[producer][1].channel.recv_exit_status()
-        for line in producer_stds[producer][1]:
+        for line in producer_stds[producer][1].readlines():
             print(line)
         print('producer {} exit code: {}'.format(producer, exit_status))
         client = producer_clients[producer].close()
