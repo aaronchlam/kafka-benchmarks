@@ -30,13 +30,13 @@ python {py_cmd}
 RUN_PRODUCER_BENCHMARK_TEMPLATE = 'benchmarks/run_producer_benchmark.py --topic {topic} --record-size {size} ' + \
                                   '--throughput {throughput} --time {time} --instances {instances} ' + \
                                   '--producer-config {config} --zookeeper {zookeeper} --output {output}'
-RUN_CONSUMER_BENCHMARK_TEMPLATE = 'benchmarks/run consumer_benchmark.py --topic {topic} --fetch-size {size} ' + \
+RUN_CONSUMER_BENCHMARK_TEMPLATE = 'benchmarks/run_consumer_benchmark.py --topic {topic} --fetch-size {size} ' + \
                                   '--throughput {throughput} --time {time} --instances {instances} ' + \
                                   '--output {output} --broker {broker} --zookeeper {zookeeper}'
 
 
 BENCHMARK_TOPIC = 'benchmark-topic'
-BENCHMARK_LENGTH = 60   # 5 minutes
+BENCHMARK_LENGTH = 10   # TODO: fix this
 RECORD_SIZE = '512B'
 
 CONFIG_DIR = os.path.join(os.getcwd(), 'config')
