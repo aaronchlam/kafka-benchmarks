@@ -35,7 +35,7 @@ RUN_CONSUMER_BENCHMARK_TEMPLATE = 'benchmarks/run_consumer_benchmark.py --topic 
 
 
 BENCHMARK_TOPIC = 'benchmark-topic'
-BENCHMARK_LENGTH = 60   # TODO: fix this
+BENCHMARK_LENGTH = 360   # TODO: fix this
 RECORD_SIZE = '512B'
 
 CONFIG_DIR = os.path.join(os.getcwd(), 'config')
@@ -193,10 +193,10 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
 
 
 def run_experiments(zookeepers, brokers, consumers, producers):
-    start_throughput = 1
-    end_throughput = 3
-    step_throughput = 1
-    num_trials = 3
+    start_throughput = 5
+    end_throughput = 60
+    step_throughput = 5
+    num_trials = 5
     for throughput in range(start_throughput, end_throughput, step_throughput):
         print("\n========= RUNNING EXPERIMENT! ============\n")
         print("number of brokers: {}".format(len(brokers)))
