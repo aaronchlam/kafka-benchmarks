@@ -23,7 +23,7 @@ def run_producer_script(topic, throughput, record_size, total_records,
                               record_size=record_size,
                               total_records=total_records,
                               producer_config=os.path.abspath(producer_config))
-    with open(os.path.abspath(output), 'w') as output_file:
+    with open(os.path.abspath(output), 'w+') as output_file:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, shell=True)
         for line in iter(p.stdout.readline, ''):
             now = datetime.now(tz)
