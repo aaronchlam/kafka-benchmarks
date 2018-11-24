@@ -24,8 +24,8 @@ def run_producer_script(topic, throughput, record_size, total_records,
                               total_records=total_records,
                               producer_config=os.path.abspath(producer_config))
     with open(os.path.abspath(output), 'w+') as output_file:
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
-        for line in iter(p.stdout.readline, b''):
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, shell=True)
+        for line in iter(p.stdout.readline, ''):
             now = datetime.now(tz)
             output_file.write('{}, {}'.format(now, line))
     return p
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     record_size = int(bitmath.parse_string(args.record_size).to_Byte())
 
     records_per_second = throughput / record_size
-    total_records = records_per_second * args.time
+    total_records = int(records_per_second * args.time)
 
     run_producer_script(args.topic, throughput, record_size, total_records,
                         args.producer_config, args.output)
