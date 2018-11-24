@@ -192,6 +192,16 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
     delete_topic(zookeeper, BENCHMARK_TOPIC)
 
 
+def run_experiments(zookeepers, brokers, consumers, producers):
+    start_throughput = 1,
+    end_throughput = 3,
+    step_throughput = 1
+    num_trials = 3
+    for throughput in range(start_throughput, end_throughput, step_throughput):
+        for trial in range(num_trials):
+            run_producer_throughput_trial(zookeepers[0], trial, brokers, producers, consumers, 1, throughput)
+
+
 if __name__ == '__main__':
     scripts_dir = os.path.dirname(os.path.realpath(__file__))
     zookeepers = get_hostnames(os.path.join(scripts_dir, ZOOKEEPERS_FILE))
