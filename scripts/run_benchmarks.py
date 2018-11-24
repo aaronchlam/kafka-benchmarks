@@ -174,6 +174,7 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
     for producer in producers:
         print("wiating on producers to finish")
         exit_status = producer_stds[producer][1].channel.recv_exit_status()
+        print("producer exist_status: {}".format(exit_status))
         client = producer_clients[producer].close()
         print("done producers")
 
