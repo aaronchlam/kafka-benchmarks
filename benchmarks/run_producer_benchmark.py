@@ -60,8 +60,7 @@ if __name__ == "__main__":
         dir_path, basename = os.path.split(args.output)
         root, ext = os.path.splitext(basename)
         for i in range(args.instances):
-            output_name = "{root}-{instance}{ext}".format(root=root,
-                                                          instance=i, ext=ext)
+            output_name = "{root}-{instance}{ext}".format(root=root, instance=i, ext=ext)
             output_path = os.path.join(dir_path, output_name)
             processes.append(run_producer(args.topic, throughput, record_size,
                                           total_records, args.producer_config, output_path))
