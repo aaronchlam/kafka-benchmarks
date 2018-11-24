@@ -193,13 +193,20 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
 
 
 def run_experiments(zookeepers, brokers, consumers, producers):
-    start_throughput = 1,
-    end_throughput = 3,
+    start_throughput = 1
+    end_throughput = 3
     step_throughput = 1
     num_trials = 3
     for throughput in range(start_throughput, end_throughput, step_throughput):
+        print("\n========= RUNNING EXPERIMENT! ============\n")
+        print("number of brokers: {}".format(len(brokers)))
+        print("number of producers: {}".format(len(producers)))
+        print("number_of consumer: {}".format(len(consumers)))
+        print("THROUGHPUT: {}MB".format(throughput))
         for trial in range(num_trials):
+            print("\n---- TRIAL {} -----".format(trial))
             run_producer_throughput_trial(zookeepers[0], trial, brokers, producers, consumers, 1, throughput)
+            print("------------------\n\n")
 
 
 if __name__ == '__main__':
@@ -214,6 +221,4 @@ if __name__ == '__main__':
     print('consumers: {}'.format(consumers))
     print('producers: {}'.format(producers))
 
-    run_producer_throughput_trial(zookeepers[0], 0, brokers, producers, consumers, 1, 5)
-    # run_producer_benchmark_script(producers, 5, 'tem07', '/bullshit/dir')
-
+    run_experiments(zookeepers, brokers, consumers, producers)
