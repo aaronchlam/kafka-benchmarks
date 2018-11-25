@@ -5,6 +5,8 @@ from datetime import datetime
 
 import pandas
 import matplotlib.pyplot as plt
+import scipy
+import scikits.bootstrap as bootstrap
 
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
 
@@ -84,6 +86,11 @@ def filepath_to_experiment(num_replicas, num_producers, num_consumers, producer_
                         '{}-consumers'.format(num_consumers), '{}-throughput'.format(producer_throughput))
 
 
+def compute_throughput_ci(dataframe):
+    low, high = bootstrap.ci(dataframe['throughput'], statfunction=scipy.mean)
+    return low, high
+
+
 if __name__ == '__main__':
     print('data_dir: {}'.format(DATA_DIR))
     producer_filepath = os.path.join(DATA_DIR, '1-replicas', '1-producers', '1-consumers', '5-throughput', '0-trial',
@@ -91,8 +98,8 @@ if __name__ == '__main__':
     consumer_filepath = os.path.join(DATA_DIR, '1-replicas', '1-producers', '1-consumers', '5-throughput', '0-trial',
                                      'consumer-tem10.txt')
 
-    big_producer_dfs = {}
-    big_consumer_dfs = {}
+    big_producer_dfs = []
+    big_consumer_dfs = []
     for throughput in range(5, 60, 5):
         producer_dfs = read_producer_trials(filepath_to_experiment(1, 1, 1, throughput))
         consumer_dfs = read_consumer_trials(filepath_to_experiment(1, 1, 1, throughput))
@@ -100,13 +107,33 @@ if __name__ == '__main__':
         big_producer_df = pandas.concat(producer_dfs.values())
         big_consumer_df = pandas.concat(consumer_dfs.values())
 
-        big_producer_dfs[throughput] = big_producer_df
-        big_consumer_dfs[throughput] = big_consumer_df
+        big_producer_dfs.append(big_producer_df)
+        big_consumer_dfs.append(big_consumer_df)
 
-    producer_means = [df['throughput'].mean() for df in big_producer_dfs.values()]
-    consumer_means = [df['throughput'].mean() for df in big_consumer_dfs.values()]
+    producer_means = [df['throughput'].mean() for df in big_producer_dfs]
+    consumer_means = [df['throughput'].mean() for df in big_consumer_dfs]
 
-    plt.plot(producer_means, consumer_means, 'ro')
+    # confidence intervals
+    lows = []
+    highs = []
+    for df in big_consumer_dfs:
+        low, high = compute_throughput_ci(df)
+        lows.append(df['throughput'].mean() - low)
+        highs.append(high - df['throughput'].mean())
+        #lows.append(df['throughput'].mean() - df.quantile(0.05))
+        #highs.append(df.quantile(0.95) - df['throughput'].mean())
+
+    #plt.plot(producer_means, consumer_means, 'ro', label='1 Replica')
+    plt.errorbar(producer_means, consumer_means, yerr=[lows, highs],
+                 fmt='-o',
+                 barsabove=True,
+                 ecolor='k',
+                 capsize=2,
+                 capthick=2,
+                 elinewidth=2,
+                 label='1 Replica')
     plt.ylabel('Consumer Throughput (MB/s)')
     plt.xlabel('Producer Throughput(MB/s)')
+    plt.title('1 Consumer Throughput Relative to 1 Producer Throughput')
+    plt.legend()
     plt.show()
