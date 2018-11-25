@@ -197,15 +197,17 @@ def run_experiments(zookeepers, brokers, consumers, producers):
     end_throughput = 60
     step_throughput = 5
     num_trials = 5
+    consumer_instances = 1
     for throughput in range(start_throughput, end_throughput, step_throughput):
         print("\n========= RUNNING EXPERIMENT! ============\n")
         print("number of brokers: {}".format(len(brokers)))
         print("number of producers: {}".format(len(producers)))
         print("number_of consumer: {}".format(len(consumers)))
+        print("number of instances per consumer: {}".format(consumer_instances))
         print("THROUGHPUT: {}MB".format(throughput))
         for trial in range(num_trials):
             print("\n---- TRIAL {} -----".format(trial))
-            run_producer_throughput_trial(zookeepers[0], trial, brokers, producers, consumers, 1, throughput)
+            run_producer_throughput_trial(zookeepers[0], trial, brokers, producers, consumers, consumer_instances, throughput)
             print("------------------\n\n")
 
 
