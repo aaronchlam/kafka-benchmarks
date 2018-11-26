@@ -106,7 +106,7 @@ if __name__ == '__main__':
     trial_filepath = os.path.join(DATA_DIR, '1-replicas', '1-producers', '1-consumers', '50-throughput', '4-trial')
     vmstat_filepath = os.path.join(trial_filepath, 'vmstat-tem08.txt')
     vmstat_df = read_vmstat(vmstat_filepath)
-    vmstat_df['throughput'] = vmstat_df['bo'].apply(lambda x: x * 512 / 1024 ** 2)
+    vmstat_df['throughput'] = vmstat_df['bo'].apply(lambda x: x * 1024 / 1024 ** 2)
     convert_timestamps_to_seconds_elapsed(vmstat_df)
 
     producer_df = read_producer_throughput(os.path.join(trial_filepath, 'producer.txt'))
@@ -114,15 +114,33 @@ if __name__ == '__main__':
 
     joined = pandas.merge(vmstat_df, producer_df, how='left', on='timestamp', suffixes=['_vmstat', '_producer'])
     joined.fillna(0, inplace=True)
+    joined['seconds_vmstat'] -= 7
 
-    with pandas.option_context('display.max_rows', None, 'display.max_columns', None):
-        print(joined.head(20))
-        print(joined.tail(20))
+    consumer_df = read_consumer_throughput(os.path.join(trial_filepath, 'consumer-tem10.txt'))
+    convert_timestamps_to_seconds_elapsed(consumer_df)
 
-    ax = joined.plot(x='seconds_vmstat', y='throughput_vmstat',
-                        label='Broker Disk')
-    joined.loc[(joined['seconds_producer'] != 0) | (joined['seconds_vmstat'] > 465)].plot(x='seconds_vmstat', y='throughput_producer', ax=ax, label='Producer')
+    joined_consumer_df = pandas.merge(vmstat_df, consumer_df, how='left', on='timestamp', suffixes=['_vmstat', '_consumer'])
+    joined_consumer_df.fillna(0, inplace=True)
+    joined['seconds_vmstat'] -= 7
 
+    #with pandas.option_context('display.max_rows', None, 'display.max_columns', None):
+    #    print(joined.head(20))
+
+    fig, axes = plt.subplots(nrows=2, ncols=1)
+
+    joined.loc[(joined['seconds_vmstat'] >= 0)] \
+        .plot(x='seconds_vmstat', y='throughput_vmstat', c='#58D68D', label='Broker Disk Write', ax=axes[0])
+
+    joined_consumer_df.loc[(joined_consumer_df['seconds_consumer'] != 0) | (joined['seconds_vmstat'] < 1)] \
+        .loc[(joined['seconds_vmstat'] >= 0)] \
+        .plot(x='seconds_vmstat', y='throughput_consumer', c='#5DADE2', label='Consumer', ax=axes[1])
+
+    # disk
+    joined.loc[(joined['seconds_producer'] != 0) | (joined['seconds_vmstat'] > 450)] \
+        .loc[(joined['seconds_vmstat'] >= 0)] \
+        .plot(x='seconds_vmstat', y='throughput_producer', c='#EB984E', label='Producer', ax=axes[1])
+
+    #joined_consumer_df.plot(x='seconds_vmstat', y='throughput_consumer', ax=ax, label='Consumer')
     # plt.fill_between(vmstat_df['timestamp'],
     #              fmt='-o',
     #              barsabove=True,
@@ -131,13 +149,20 @@ if __name__ == '__main__':
     #              capthick=2,
     #              elinewidth=2,
     #              label='1 Replica')
-    plt.ylabel('Throughput (MB/s)')
-    plt.xlabel('Time (s)')
-    x_start, x_end = ax.get_xlim()
-    plt.xlim(0, x_end)
-    plt.xticks(numpy.arange(0, x_end + 1, 100))
-    y_start, y_end = ax.get_ylim()
-    plt.ylim(0, y_end)
-    plt.title('Throughputs of a Single Experiment (1 Producer, 1 Consumer, 1 Replica)')
+
+    #plt.xticks(numpy.arange(0, x_end + 1, 60))
+    #y_start, y_end = axes[0].get_ylim()
+    axes[1].set_title('Producer & Consumer Throughputs over Time')
+    axes[0].set_title('Broker Disk Write Throughput over Time')
+    for ax in axes:
+        x_end = 870
+        ax.set_xlim(0, x_end - ((x_end + 60) % (60)))
+        ax.set_xticks(numpy.arange(0, x_end + 1, 60))
+        ax.set_ylim(bottom=0)
+        ax.set_ylabel('Throughput (MB/s)')
+        ax.set_xlabel('Time (s)')
+    #plt.yticks(numpy.arange(0, y_end + 1, 20))
+    fig.suptitle('Throughputs during a Single Experiment', fontsize=14)
+    fig.subplots_adjust(top=0.3, bottom=0.1)
     plt.legend()
     plt.show()
