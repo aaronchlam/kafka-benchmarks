@@ -211,6 +211,72 @@ def run_experiments(zookeepers, brokers, consumers, producers):
             print("------------------\n\n")
 
 
+def run_increasing_clients_trial(zookeeper, trial, brokers, producers, consumers, num_clients):
+    # create test result directory
+    data_dir = mkdir_increasing_consumers_dir(len(brokers), num_clients, trial)
+
+    # create kafka topic
+    create_topic(zookeeper, BENCHMARK_TOPIC, replication_factor=len(brokers))
+
+    # start vmstat
+    start_vmstats(brokers, data_dir)
+
+    # run the producer_benchmark_scripts
+    producer_clients, producer_stds = run_producer_benchmark_script(producers, 50, zookeeper, data_dir)
+
+    # run the consumer_benchmark_scripts
+    num_clients_per_consumer = num_clients / consumers
+    consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, num_clients_per_consumer, 50, brokers[0],
+                                                                    zookeeper, data_dir)
+
+    for producer in producers:
+        print("wiating on producers to finish")
+        exit_status = producer_stds[producer][1].channel.recv_exit_status()
+        print("producer exist_status: {}".format(exit_status))
+        client = producer_clients[producer].close()
+        print("done producers")
+
+    for consumer in consumers:
+        print("waiting on consumers to finish")
+        exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
+        print("consumer exit status: {}".format(exit_status))
+
+        client = consumer_clients[consumer].close()
+
+    # end vmstat
+    stop_vmstats(brokers)
+
+    # delete kafka topic
+    delete_topic(zookeeper, BENCHMARK_TOPIC)
+
+
+def mkdir_increasing_consumers_dir(num_replicas, num_clients, trial):
+    mkdir_path = os.path.join(DATA_DIR, 'increasing-clients', '{}-replicas'.format(num_replicas),
+                              '{}-clients'.format(num_clients), '{}-trial'.format(trial))
+    print('Making directory... {}'.format(mkdir_path))
+
+    os.makedirs(mkdir_path, exist_ok=True)
+
+    return mkdir_path
+
+
+def run_increasing_consumers_experiment(zookeepers, brokers, consumers, producers):
+    start_clients = 0
+    end_clients = 10
+    step_clients = 5
+    num_trials = 5
+    for clients in range(start_clients, end_clients, step_clients):
+        print("\n========= RUNNING EXPERIMENT! ============\n")
+        print("number of brokers: {}".format(len(brokers)))
+        print("number of producers: {}".format(len(producers)))
+        print("number_of consumer: {}".format(len(consumers)))
+        print("NUMBER OF CLIENTS: {}".format(clients))
+        for trial in range(num_trials):
+            print("\n---- TRIAL {} -----".format(trial))
+            run_increasing_clients_trial(zookeepers[0], trial, brokers, producers, consumers, clients)
+            print("------------------\n\n")
+
+
 if __name__ == '__main__':
     scripts_dir = os.path.dirname(os.path.realpath(__file__))
     zookeepers = get_hostnames(os.path.join(scripts_dir, ZOOKEEPERS_FILE))
@@ -223,4 +289,5 @@ if __name__ == '__main__':
     print('consumers: {}'.format(consumers))
     print('producers: {}'.format(producers))
 
-    run_experiments(zookeepers, brokers, consumers, producers)
+    # run_experiments(zookeepers, brokers, consumers, producers)
+    run_increasing_consumers_experiment()
