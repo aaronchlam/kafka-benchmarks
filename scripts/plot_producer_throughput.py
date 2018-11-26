@@ -90,6 +90,7 @@ def compute_throughput_ci(dataframe):
     low, high = bootstrap.ci(dataframe['throughput'], statfunction=scipy.mean)
     return low, high
 
+
 def get_2_replica_dfs(data_dir):
     producer_dfs = []
     consumer_dfs = []
@@ -105,6 +106,23 @@ def get_2_replica_dfs(data_dir):
 
     return sorted(zip(producer_dfs, consumer_dfs), key=lambda t: t[0]['throughput'].mean())
 
+
+def get_3_replica_dfs(data_dir):
+    producer_dfs = []
+    consumer_dfs = []
+    for throughput in range(5, 60, 5):
+        producer_trial_dfs = read_producer_trials(filepath_to_experiment(3, 1, 1, throughput))
+        consumer_trial_dfs = read_consumer_trials(filepath_to_experiment(3, 1, 1, throughput))
+
+        concat_producer_dfs = pandas.concat(producer_trial_dfs.values())
+        concat_consumer_dfs = pandas.concat(consumer_trial_dfs.values())
+
+        producer_dfs.append(concat_producer_dfs)
+        consumer_dfs.append(concat_consumer_dfs)
+
+    return sorted(zip(producer_dfs, consumer_dfs), key=lambda t: t[0]['throughput'].mean())
+
+
 def confidence_interval(dfs):
     # confidence intervals
     lows = []
@@ -115,6 +133,7 @@ def confidence_interval(dfs):
         highs.append(high - df['throughput'].mean())
 
     return lows, highs
+
 
 if __name__ == '__main__':
     big_producer_dfs = []
@@ -147,7 +166,9 @@ if __name__ == '__main__':
     replicas_2_dfs_tuples = get_2_replica_dfs(DATA_DIR)
     replicas_2_lows, replicas_2_highs = confidence_interval(map(lambda t: t[1], replicas_2_dfs_tuples))
 
-    fig, ax = plt.subplots(1)
+    # 3-replicas
+    replicas_3_dfs_tuples = get_3_replica_dfs(DATA_DIR)
+    replicas_3_lows, replicas_3_hights = confidence_interval(map(lambda t: t[1], replicas_3_dfs_tuples))
 
     #plt.plot(producer_means, consumer_means, 'ro', label='1 Replica')
     plt.errorbar(producer_means, consumer_means, yerr=[lows, highs],
@@ -174,7 +195,21 @@ if __name__ == '__main__':
                  #markeredgewidth=1,
                  #markeredgecolor='k',
                  label='2 Replicas')
-    plt.ylim(ymin=0)
+    plt.errorbar([df['throughput'].mean() for df in map(lambda t: t[0], replicas_3_dfs_tuples)],
+                 [df['throughput'].mean() for df in map(lambda t: t[1], replicas_3_dfs_tuples)],
+                 yerr=[replicas_2_lows, replicas_2_highs],
+                 fmt='-sg',
+                 barsabove=True,
+                 ecolor='k',
+                 capsize=2,
+                 capthick=2,
+                 elinewidth=2,
+                 markersize=8,
+                 # markeredgewidth=1,
+                 # markeredgecolor='k',
+                 label='3 Replicas')
+    plt.ylim(bottom=0)
+    plt.xlim(left=0)
     plt.ylabel('Consumer Throughput (MB/s)')
     plt.xlabel('Producer Throughput(MB/s)')
     plt.title('1 Consumer Throughput Relative to 1 Producer Throughput')
