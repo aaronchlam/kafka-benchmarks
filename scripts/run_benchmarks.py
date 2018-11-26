@@ -290,4 +290,4 @@ if __name__ == '__main__':
     print('producers: {}'.format(producers))
 
     # run_experiments(zookeepers, brokers, consumers, producers)
-    run_increasing_consumers_experiment()
+    run_increasing_consumers_experiment(zookeepers, brokers, consumers, producers)
