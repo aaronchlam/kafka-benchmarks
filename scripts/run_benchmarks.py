@@ -147,6 +147,7 @@ def run_consumer_benchmark_script(consumers, instances, producer_throughput, bro
                                                         output=output_path, instances=instances,
                                                         broker='{}:9092'.format(broker_ip))
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
+        print(ssh_cmds)
 
         clients[consumer] = open_ssh(consumer)
         stds[consumer] = clients[consumer].exec_command(ssh_cmds)
