@@ -35,7 +35,7 @@ RUN_CONSUMER_BENCHMARK_TEMPLATE = 'benchmarks/run_consumer_benchmark.py --topic 
 
 
 BENCHMARK_TOPIC = 'new-benchmark'
-BENCHMARK_LENGTH = 360   # TODO: fix this
+BENCHMARK_LENGTH = 20   # TODO: fix this
 RECORD_SIZE = '512B'
 
 CONFIG_DIR = os.path.join(os.getcwd(), 'config')
@@ -140,17 +140,42 @@ def run_consumer_benchmark_script(consumers, instances, producer_throughput, bro
     clients = {}
     stds = {}
 
-    for consumer in consumers:
-        output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))
-        py_cmd = RUN_CONSUMER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE, time=BENCHMARK_LENGTH,
-                                                        throughput=throughput_string, zookeeper=zookeeper,
-                                                        output=output_path, instances=instances,
-                                                        broker='{}:9092'.format(broker_ip))
-        ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
-        print(ssh_cmds)
+    if instances > 0:
+        instances_per_client = [0 for c in consumers]
+        idx = 0
+        for i in range(instances):
+            if idx < len(instances_per_client):
+                instances_per_client[idx] += 1
+                idx += 1
+            else:
+                idx = 0
 
-        clients[consumer] = open_ssh(consumer)
-        stds[consumer] = clients[consumer].exec_command(ssh_cmds)
+        for idx, consumer in enumerate(consumers):
+            if instances_per_client[idx] > 0:
+                output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))
+                py_cmd = RUN_CONSUMER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE,
+                                                                time=BENCHMARK_LENGTH,
+                                                                throughput=throughput_string, zookeeper=zookeeper,
+                                                                output=output_path, instances=instances_per_client[idx],
+                                                                broker='{}:9092'.format(broker_ip))
+                ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
+                print(ssh_cmds)
+
+                clients[consumer] = open_ssh(consumer)
+                stds[consumer] = clients[consumer].exec_command(ssh_cmds)
+
+    else
+        for consumer in consumers:
+            output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))
+            py_cmd = RUN_CONSUMER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE, time=BENCHMARK_LENGTH,
+                                                            throughput=throughput_string, zookeeper=zookeeper,
+                                                            output=output_path, instances=instances,
+                                                            broker='{}:9092'.format(broker_ip))
+            ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
+            print(ssh_cmds)
+
+            clients[consumer] = open_ssh(consumer)
+            stds[consumer] = clients[consumer].exec_command(ssh_cmds)
 
     return clients, stds
 
@@ -229,9 +254,8 @@ def run_increasing_clients_trial(zookeeper, trial, brokers, producers, consumers
     producer_clients, producer_stds = run_producer_benchmark_script(producers, 50, zookeeper, data_dir)
 
     # run the consumer_benchmark_scripts
-    num_clients_per_consumer = int(num_clients / len(consumers))
-    if num_clients_per_consumer > 0:
-        consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, num_clients_per_consumer, 50, brokers[0],
+    if num_clients > 0:
+        consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, num_clients, 50, brokers[0],
                                                                         zookeeper, data_dir)
 
     for producer in producers:
@@ -241,13 +265,14 @@ def run_increasing_clients_trial(zookeeper, trial, brokers, producers, consumers
         client = producer_clients[producer].close()
         print("done producers")
 
-    if num_clients_per_consumer > 0:
+    if num_clients > 0:
         for consumer in consumers:
-            print("waiting on consumers to finish")
-            exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
-            print("consumer exit status: {}".format(exit_status))
+            if consumer in consumer_clients:
+                print("waiting on consumer {} to finish".format(consumer))
+                exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
+                print("consumer exit status: {}".format(exit_status))
 
-            client = consumer_clients[consumer].close()
+                client = consumer_clients[consumer].close()
 
     # end vmstat
     stop_vmstats(brokers)
@@ -268,9 +293,9 @@ def mkdir_increasing_consumers_dir(num_replicas, num_clients, trial):
 
 def run_increasing_consumers_experiment(zookeepers, brokers, consumers, producers):
     start_clients = 0
-    end_clients = 65
-    step_clients = 5
-    num_trials = 5
+    end_clients = 3
+    step_clients = 1
+    num_trials = 23
     for clients in range(start_clients, end_clients, step_clients):
         print("\n========= RUNNING EXPERIMENT! ============\n")
         print("number of brokers: {}".format(len(brokers)))
