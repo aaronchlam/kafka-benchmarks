@@ -164,7 +164,7 @@ def run_consumer_benchmark_script(consumers, instances, producer_throughput, bro
                 clients[consumer] = open_ssh(consumer)
                 stds[consumer] = clients[consumer].exec_command(ssh_cmds)
 
-    else
+    else:
         for consumer in consumers:
             output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))
             py_cmd = RUN_CONSUMER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE, time=BENCHMARK_LENGTH,
