@@ -230,8 +230,9 @@ def run_increasing_clients_trial(zookeeper, trial, brokers, producers, consumers
 
     # run the consumer_benchmark_scripts
     num_clients_per_consumer = num_clients / len(consumers)
-    consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, num_clients_per_consumer, 50, brokers[0],
-                                                                    zookeeper, data_dir)
+    if num_clients_per_consumer > 0:
+        consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, num_clients_per_consumer, 50, brokers[0],
+                                                                        zookeeper, data_dir)
 
     for producer in producers:
         print("wiating on producers to finish")
@@ -240,12 +241,13 @@ def run_increasing_clients_trial(zookeeper, trial, brokers, producers, consumers
         client = producer_clients[producer].close()
         print("done producers")
 
-    for consumer in consumers:
-        print("waiting on consumers to finish")
-        exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
-        print("consumer exit status: {}".format(exit_status))
+    if num_clients_per_consumer > 0:
+        for consumer in consumers:
+            print("waiting on consumers to finish")
+            exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
+            print("consumer exit status: {}".format(exit_status))
 
-        client = consumer_clients[consumer].close()
+            client = consumer_clients[consumer].close()
 
     # end vmstat
     stop_vmstats(brokers)
