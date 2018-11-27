@@ -180,12 +180,13 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
         client = producer_clients[producer].close()
         print("done producers")
 
-    for consumer in consumers:
-        print("waiting on consumers to finish")
-        exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
-        print("consumer exit status: {}".format(exit_status))
+    if consumer_instances > 0:
+        for consumer in consumers:
+            print("waiting on consumers to finish")
+            exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
+            print("consumer exit status: {}".format(exit_status))
 
-        client = consumer_clients[consumer].close()
+            client = consumer_clients[consumer].close()
 
     # end vmstat
     stop_vmstats(brokers)
