@@ -259,7 +259,7 @@ def run_increasing_clients_trial(zookeeper, trial, brokers, producers, consumers
                                                                         zookeeper, data_dir)
 
     for producer in producers:
-        print("wiating on producers to finish")
+        print("wiating on producers {} to finish".format(producers))
         exit_status = producer_stds[producer][1].channel.recv_exit_status()
         print("producer exist_status: {}".format(exit_status))
         client = producer_clients[producer].close()
