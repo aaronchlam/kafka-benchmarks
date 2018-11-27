@@ -34,7 +34,7 @@ RUN_CONSUMER_BENCHMARK_TEMPLATE = 'benchmarks/run_consumer_benchmark.py --topic 
                                   '--output {output} --broker {broker} --zookeeper {zookeeper}'
 
 
-BENCHMARK_TOPIC = 'benchmark-topic'
+BENCHMARK_TOPIC = 'new-benchmark'
 BENCHMARK_LENGTH = 360   # TODO: fix this
 RECORD_SIZE = '512B'
 
