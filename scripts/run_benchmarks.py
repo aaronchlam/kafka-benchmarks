@@ -170,6 +170,7 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
 
     # run the consumer_benchmark_scripts
     if consumer_instances > 0:
+        print('consumer instances: {}'.format(consumer_instances))
         consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, consumer_instances, producer_throughput, brokers[0],
                                                                     zookeeper, data_dir)
 
