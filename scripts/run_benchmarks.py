@@ -35,7 +35,7 @@ RUN_CONSUMER_BENCHMARK_TEMPLATE = 'benchmarks/run_consumer_benchmark.py --topic 
 
 
 BENCHMARK_TOPIC = 'new-benchmark'
-BENCHMARK_LENGTH = 20   # TODO: fix this
+BENCHMARK_LENGTH = 180   # TODO: fix this
 RECORD_SIZE = '512B'
 
 CONFIG_DIR = os.path.join(os.getcwd(), 'config')
@@ -293,9 +293,9 @@ def mkdir_increasing_consumers_dir(num_replicas, num_clients, trial):
 
 def run_increasing_consumers_experiment(zookeepers, brokers, consumers, producers):
     start_clients = 0
-    end_clients = 3
+    end_clients = 51
     step_clients = 1
-    num_trials = 2
+    num_trials = 3
     for clients in range(start_clients, end_clients, step_clients):
         print("\n========= RUNNING EXPERIMENT! ============\n")
         print("number of brokers: {}".format(len(brokers)))
