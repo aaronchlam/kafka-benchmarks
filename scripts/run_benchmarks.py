@@ -147,7 +147,6 @@ def run_consumer_benchmark_script(consumers, instances, producer_throughput, bro
                                                         output=output_path, instances=instances,
                                                         broker='{}:9092'.format(broker_ip))
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
-        print(ssh_cmds)
 
         clients[consumer] = open_ssh(consumer)
         stds[consumer] = clients[consumer].exec_command(ssh_cmds)
@@ -169,7 +168,8 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
     producer_clients, producer_stds = run_producer_benchmark_script(producers, producer_throughput, zookeeper, data_dir)
 
     # run the consumer_benchmark_scripts
-    consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, consumer_instances, producer_throughput, brokers[0],
+    if consumer_instances > 0:
+        consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, consumer_instances, producer_throughput, brokers[0],
                                                                     zookeeper, data_dir)
 
     for producer in producers:
