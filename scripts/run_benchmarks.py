@@ -270,7 +270,7 @@ def run_increasing_consumers_experiment(zookeepers, brokers, consumers, producer
     start_clients = 0
     end_clients = 10
     step_clients = 5
-    num_trials = 5
+    num_trials = 2
     for clients in range(start_clients, end_clients, step_clients):
         print("\n========= RUNNING EXPERIMENT! ============\n")
         print("number of brokers: {}".format(len(brokers)))
