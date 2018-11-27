@@ -225,7 +225,7 @@ def run_increasing_clients_trial(zookeeper, trial, brokers, producers, consumers
     producer_clients, producer_stds = run_producer_benchmark_script(producers, 50, zookeeper, data_dir)
 
     # run the consumer_benchmark_scripts
-    num_clients_per_consumer = num_clients / consumers
+    num_clients_per_consumer = num_clients / len(consumers)
     consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, num_clients_per_consumer, 50, brokers[0],
                                                                     zookeeper, data_dir)
 
