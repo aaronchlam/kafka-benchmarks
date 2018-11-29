@@ -34,8 +34,8 @@ RUN_CONSUMER_BENCHMARK_TEMPLATE = 'benchmarks/run_consumer_benchmark.py --topic 
                                   '--output {output} --broker {broker} --zookeeper {zookeeper}'
 
 
-BENCHMARK_TOPIC = 'benchmark-topic'
-BENCHMARK_LENGTH = 360   # TODO: fix this
+BENCHMARK_TOPIC = 'new-benchmark'
+BENCHMARK_LENGTH = 180   # TODO: fix this
 RECORD_SIZE = '512B'
 
 CONFIG_DIR = os.path.join(os.getcwd(), 'config')
@@ -140,16 +140,42 @@ def run_consumer_benchmark_script(consumers, instances, producer_throughput, bro
     clients = {}
     stds = {}
 
-    for consumer in consumers:
-        output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))
-        py_cmd = RUN_CONSUMER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE, time=BENCHMARK_LENGTH,
-                                                        throughput=throughput_string, zookeeper=zookeeper,
-                                                        output=output_path, instances=instances,
-                                                        broker='{}:9092'.format(broker_ip))
-        ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
+    if instances > 0:
+        instances_per_client = [0 for c in consumers]
+        idx = 0
+        for i in range(instances):
+            if idx < len(instances_per_client):
+                instances_per_client[idx] += 1
+                idx += 1
+            else:
+                idx = 0
 
-        clients[consumer] = open_ssh(consumer)
-        stds[consumer] = clients[consumer].exec_command(ssh_cmds)
+        for idx, consumer in enumerate(consumers):
+            if instances_per_client[idx] > 0:
+                output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))
+                py_cmd = RUN_CONSUMER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE,
+                                                                time=BENCHMARK_LENGTH,
+                                                                throughput=throughput_string, zookeeper=zookeeper,
+                                                                output=output_path, instances=instances_per_client[idx],
+                                                                broker='{}:9092'.format(broker_ip))
+                ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
+                print(ssh_cmds)
+
+                clients[consumer] = open_ssh(consumer)
+                stds[consumer] = clients[consumer].exec_command(ssh_cmds)
+
+    else:
+        for consumer in consumers:
+            output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))
+            py_cmd = RUN_CONSUMER_BENCHMARK_TEMPLATE.format(topic=BENCHMARK_TOPIC, size=RECORD_SIZE, time=BENCHMARK_LENGTH,
+                                                            throughput=throughput_string, zookeeper=zookeeper,
+                                                            output=output_path, instances=instances,
+                                                            broker='{}:9092'.format(broker_ip))
+            ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
+            print(ssh_cmds)
+
+            clients[consumer] = open_ssh(consumer)
+            stds[consumer] = clients[consumer].exec_command(ssh_cmds)
 
     return clients, stds
 
@@ -168,7 +194,9 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
     producer_clients, producer_stds = run_producer_benchmark_script(producers, producer_throughput, zookeeper, data_dir)
 
     # run the consumer_benchmark_scripts
-    consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, consumer_instances, producer_throughput, brokers[0],
+    if consumer_instances > 0:
+        print('consumer instances: {}'.format(consumer_instances))
+        consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, consumer_instances, producer_throughput, brokers[0],
                                                                     zookeeper, data_dir)
 
     for producer in producers:
@@ -178,12 +206,13 @@ def run_producer_throughput_trial(zookeeper, trial, brokers, producers, consumer
         client = producer_clients[producer].close()
         print("done producers")
 
-    for consumer in consumers:
-        print("waiting on consumers to finish")
-        exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
-        print("consumer exit status: {}".format(exit_status))
+    if consumer_instances > 0:
+        for consumer in consumers:
+            print("waiting on consumers to finish")
+            exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
+            print("consumer exit status: {}".format(exit_status))
 
-        client = consumer_clients[consumer].close()
+            client = consumer_clients[consumer].close()
 
     # end vmstat
     stop_vmstats(brokers)
@@ -211,6 +240,74 @@ def run_experiments(zookeepers, brokers, consumers, producers):
             print("------------------\n\n")
 
 
+def run_increasing_clients_trial(zookeeper, trial, brokers, producers, consumers, num_clients):
+    # create test result directory
+    data_dir = mkdir_increasing_consumers_dir(len(brokers), num_clients, trial)
+
+    # create kafka topic
+    create_topic(zookeeper, BENCHMARK_TOPIC, replication_factor=len(brokers))
+
+    # start vmstat
+    start_vmstats(brokers, data_dir)
+
+    # run the producer_benchmark_scripts
+    producer_clients, producer_stds = run_producer_benchmark_script(producers, 50, zookeeper, data_dir)
+
+    # run the consumer_benchmark_scripts
+    if num_clients > 0:
+        consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, num_clients, 50, brokers[0],
+                                                                        zookeeper, data_dir)
+
+    for producer in producers:
+        print("wiating on producers {} to finish".format(producers))
+        exit_status = producer_stds[producer][1].channel.recv_exit_status()
+        print("producer exist_status: {}".format(exit_status))
+        client = producer_clients[producer].close()
+        print("done producers")
+
+    if num_clients > 0:
+        for consumer in consumers:
+            if consumer in consumer_clients:
+                print("waiting on consumer {} to finish".format(consumer))
+                exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
+                print("consumer exit status: {}".format(exit_status))
+
+                client = consumer_clients[consumer].close()
+
+    # end vmstat
+    stop_vmstats(brokers)
+
+    # delete kafka topic
+    delete_topic(zookeeper, BENCHMARK_TOPIC)
+
+
+def mkdir_increasing_consumers_dir(num_replicas, num_clients, trial):
+    mkdir_path = os.path.join(DATA_DIR, 'increasing-clients', '{}-replicas'.format(num_replicas),
+                              '{}-clients'.format(num_clients), '{}-trial'.format(trial))
+    print('Making directory... {}'.format(mkdir_path))
+
+    os.makedirs(mkdir_path, exist_ok=True)
+
+    return mkdir_path
+
+
+def run_increasing_consumers_experiment(zookeepers, brokers, consumers, producers):
+    start_clients = 0
+    end_clients = 51
+    step_clients = 1
+    num_trials = 3
+    for clients in range(start_clients, end_clients, step_clients):
+        print("\n========= RUNNING EXPERIMENT! ============\n")
+        print("number of brokers: {}".format(len(brokers)))
+        print("number of producers: {}".format(len(producers)))
+        print("number_of consumer: {}".format(len(consumers)))
+        print("NUMBER OF CLIENTS: {}".format(clients))
+        for trial in range(num_trials):
+            print("\n---- TRIAL {} -----".format(trial))
+            run_increasing_clients_trial(zookeepers[0], trial, brokers, producers, consumers, clients)
+            print("------------------\n\n")
+
+
 if __name__ == '__main__':
     scripts_dir = os.path.dirname(os.path.realpath(__file__))
     zookeepers = get_hostnames(os.path.join(scripts_dir, ZOOKEEPERS_FILE))
@@ -223,4 +320,5 @@ if __name__ == '__main__':
     print('consumers: {}'.format(consumers))
     print('producers: {}'.format(producers))
 
-    run_experiments(zookeepers, brokers, consumers, producers)
+    # run_experiments(zookeepers, brokers, consumers, producers)
+    run_increasing_consumers_experiment(zookeepers, brokers, consumers, producers)
