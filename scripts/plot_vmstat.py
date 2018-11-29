@@ -6,6 +6,8 @@ from datetime import datetime
 import pandas
 from matplotlib import pyplot as plt
 import numpy
+import scipy
+import scikits.bootstrap as bootstrap
 
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data'))
 
@@ -103,10 +105,10 @@ def convert_timestamps_to_seconds_elapsed(df):
 
 
 if __name__ == '__main__':
-    trial_filepath = os.path.join(DATA_DIR, '1-replicas', '1-producers', '1-consumers', '50-throughput', '4-trial')
+    trial_filepath = os.path.join(DATA_DIR, '1-replicas', '1-producers', '1-consumers', '15-throughput', '4-trial')
     vmstat_filepath = os.path.join(trial_filepath, 'vmstat-tem08.txt')
     vmstat_df = read_vmstat(vmstat_filepath)
-    vmstat_df['throughput'] = vmstat_df['bo'].apply(lambda x: x * 1024 / 1024 ** 2)
+    vmstat_df['throughput'] = vmstat_df['bo'].apply(lambda x: x * 1024 / 1e6)
     convert_timestamps_to_seconds_elapsed(vmstat_df)
 
     producer_df = read_producer_throughput(os.path.join(trial_filepath, 'producer.txt'))
@@ -114,29 +116,33 @@ if __name__ == '__main__':
 
     joined = pandas.merge(vmstat_df, producer_df, how='left', on='timestamp', suffixes=['_vmstat', '_producer'])
     joined.fillna(0, inplace=True)
-    joined['seconds_vmstat'] -= 7
+    joined['seconds_vmstat'] -= 8
 
     consumer_df = read_consumer_throughput(os.path.join(trial_filepath, 'consumer-tem10.txt'))
     convert_timestamps_to_seconds_elapsed(consumer_df)
 
     joined_consumer_df = pandas.merge(vmstat_df, consumer_df, how='left', on='timestamp', suffixes=['_vmstat', '_consumer'])
     joined_consumer_df.fillna(0, inplace=True)
-    joined['seconds_vmstat'] -= 7
+    joined_consumer_df['seconds_vmstat'] -= 11
 
-    #with pandas.option_context('display.max_rows', None, 'display.max_columns', None):
-    #    print(joined.head(20))
+    with pandas.option_context('display.max_rows', None, 'display.max_columns', None):
+        sums = []
+        for i in range(0, 390, 30):
+            sums.append(vmstat_df.loc[i:i + 30].sum()['throughput'])
+        print(numpy.mean(sums))
+        print(bootstrap.ci(sums, statfunction=scipy.mean))
 
     fig, axes = plt.subplots(nrows=2, ncols=1)
 
     joined.loc[(joined['seconds_vmstat'] >= 0)] \
-        .plot(x='seconds_vmstat', y='throughput_vmstat', c='#58D68D', label='Broker Disk Write', ax=axes[0])
+        .plot(x='seconds_vmstat', y='throughput_vmstat', c='#58D68D', ax=axes[0])
 
     joined_consumer_df.loc[(joined_consumer_df['seconds_consumer'] != 0) | (joined['seconds_vmstat'] < 1)] \
         .loc[(joined['seconds_vmstat'] >= 0)] \
         .plot(x='seconds_vmstat', y='throughput_consumer', c='#5DADE2', label='Consumer', ax=axes[1])
 
     # disk
-    joined.loc[(joined['seconds_producer'] != 0) | (joined['seconds_vmstat'] > 450)] \
+    joined.loc[(joined['seconds_producer'] != 0) | (joined['seconds_vmstat'] > 355)] \
         .loc[(joined['seconds_vmstat'] >= 0)] \
         .plot(x='seconds_vmstat', y='throughput_producer', c='#EB984E', label='Producer', ax=axes[1])
 
@@ -150,19 +156,22 @@ if __name__ == '__main__':
     #              elinewidth=2,
     #              label='1 Replica')
 
+    #print(vmstat_df.mean())
+
     #plt.xticks(numpy.arange(0, x_end + 1, 60))
     #y_start, y_end = axes[0].get_ylim()
-    axes[1].set_title('Producer & Consumer Throughputs over Time')
-    axes[0].set_title('Broker Disk Write Throughput over Time')
+    axes[1].set_title('Producer & Consumer Throughputs Over Time')
+    axes[0].set_title('Broker Disk Write Throughput Over Time')
     for ax in axes:
-        x_end = 870
+        x_end = 360
         ax.set_xlim(0, x_end - ((x_end + 60) % (60)))
         ax.set_xticks(numpy.arange(0, x_end + 1, 60))
         ax.set_ylim(bottom=0)
         ax.set_ylabel('Throughput (MB/s)')
         ax.set_xlabel('Time (s)')
     #plt.yticks(numpy.arange(0, y_end + 1, 20))
-    fig.suptitle('Throughputs during a Single Experiment', fontsize=14)
-    fig.subplots_adjust(top=0.3, bottom=0.1)
-    plt.legend()
-    plt.show()
+    axes[0].get_legend().remove()
+    plt.tight_layout()
+    # plt.show()
+    plt.draw()
+    plt.savefig('./throughput_vmstat.eps')

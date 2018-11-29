@@ -2,6 +2,7 @@ import os
 import csv
 import re
 from datetime import datetime
+from pathlib import Path
 
 import pandas
 import matplotlib.pyplot as plt
@@ -170,6 +171,10 @@ if __name__ == '__main__':
     replicas_3_dfs_tuples = get_3_replica_dfs(DATA_DIR)
     replicas_3_lows, replicas_3_hights = confidence_interval(map(lambda t: t[1], replicas_3_dfs_tuples))
 
+    print(producer_means[-1].mean())
+    print(replicas_2_dfs_tuples[-1][0].mean())
+    print(replicas_3_dfs_tuples[-1][0].mean())
+
     #plt.plot(producer_means, consumer_means, 'ro', label='1 Replica')
     plt.errorbar(producer_means, consumer_means, yerr=[lows, highs],
                  fmt='-o',
@@ -182,7 +187,7 @@ if __name__ == '__main__':
                  markersize=8,
                  #markeredgewidth=1,
                  #markeredgecolor='k',
-                 label='1 Replica')
+                 label='replication-factor=1')
     plt.errorbar([df['throughput'].mean() for df in map(lambda t: t[0], replicas_2_dfs_tuples)],
                  [df['throughput'].mean() for df in map(lambda t: t[1], replicas_2_dfs_tuples)],
                  yerr=[replicas_2_lows, replicas_2_highs],
@@ -196,10 +201,10 @@ if __name__ == '__main__':
                  markersize=8,
                  #markeredgewidth=1,
                  #markeredgecolor='k',
-                 label='2 Replicas')
+                 label='replication-factor=2')
     plt.errorbar([df['throughput'].mean() for df in map(lambda t: t[0], replicas_3_dfs_tuples)],
                  [df['throughput'].mean() for df in map(lambda t: t[1], replicas_3_dfs_tuples)],
-                 yerr=[replicas_2_lows, replicas_2_highs],
+                 yerr=[replicas_3_lows, replicas_3_hights],
                  fmt='-s',
                  color='#EB984E',
                  barsabove=True,
@@ -210,11 +215,12 @@ if __name__ == '__main__':
                  markersize=8,
                  # markeredgewidth=1,
                  # markeredgecolor='k',
-                 label='3 Replicas')
+                 label='replication-factor=3')
     plt.ylim(bottom=0)
     plt.xlim(left=0)
     plt.ylabel('Consumer Throughput (MB/s)')
-    plt.xlabel('Producer Throughput(MB/s)')
-    plt.title('1 Consumer Throughput Relative to 1 Producer Throughput')
+    plt.xlabel('Producer Throughput (MB/s)')
+    plt.title('producers=1, consumers=1, topics=1, partitions=1, record-size=512 bytes')
     plt.legend()
-    plt.show()
+    plt.draw()
+    plt.savefig('./producer_throughput.eps', bbox_inches='tight')
