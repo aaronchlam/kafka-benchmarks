@@ -10,14 +10,14 @@ TIMEZONE = 'EST'
 CMD_TEMPLATE = "runjava com.rabbitmq.perf.PerfTest " \
                "-h amqp://{user}:{password}@{host} " + \
                "-u {queue_name}" + \
-               "-x {num_producers} -y 0 " + \
+               "-x 0 -y {num_consumers} " + \
                "-s {record_size} " + \
-               "-C {total_records} " + \
-               "-r {records_per_second} -ms "
+               "-D {total_records} " + \
+               "-R {records_per_second} -ms " + \
+               "--predeclared "
 
 
-def run_producer(user, password, host, queue_name, num_producers, record_size, total_records, throughput, output,
-                 persistent=False):
+def run_consumer(user, password, host, queue_name, num_producers, record_size, total_records, throughput, output):
     tz = timezone(TIMEZONE)
     records_per_second = int(throughput / record_size)
     cmd = CMD_TEMPLATE.format(user=user, password=password, host=host,
@@ -26,8 +26,6 @@ def run_producer(user, password, host, queue_name, num_producers, record_size, t
                               record_size=record_size,
                               total_records=total_records,
                               records_per_second=records_per_second)
-    if persistent:
-        cmd += "-f persistent"
     with open(os.path.abspath(output), 'w') as output_file:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, shell=True)
         for line in p.stdout:
@@ -42,17 +40,15 @@ if __name__ == "__main__":
     parser.add_argument("--password", type=str, required=True)
     parser.add_argument("--host", type=str, required=True)
     parser.add_argument("--queue", type=str, required=True)
-    parser.add_argument("--num-producers", type=int, required=True)
+    parser.add_argument("--num_producers", type=int, required=True)
     parser.add_argument("--record-size", type=str, required=True, help="e.g. 256B")
-    parser.add_argument("--total-records", type=int, required=True)
+    parser.add_argument("--total_records", type=int, required=True)
     parser.add_argument("--throughput", type=str, required=True, help="e.g. 10MB")
     parser.add_argument("--output", type=str, required=True)
-    parser.add_argument("--persistent", dest='persistent', action='store_true')
 
     args = parser.parse_args()
 
     throughput = int(bitmath.parse_string(args.throughput).to_Byte())
     record_size = int(bitmath.parse_string(args.record_size).to_Byte())
 
-    run_producer(args.user, args.password, args.host, args.queue, args.num_producers, record_size, args.total_records,
-                 throughput, args.output, args.persistent)
+    run_consumer(args.user, args.password, args.host, args.queue, args.num_producers, record_size, args.total_records, throughput, args.output)
