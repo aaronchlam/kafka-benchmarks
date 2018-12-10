@@ -54,4 +54,4 @@ if __name__ == "__main__":
     record_size = int(bitmath.parse_string(args.record_size).to_Byte())
 
     run_producer(args.user, args.password, args.host, args.queue, args.num_producers, throughput, record_size,
-                 args.total_records, args.producer_config, args.output)
+                 args.total_records, args.output)
