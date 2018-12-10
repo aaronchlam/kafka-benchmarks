@@ -47,7 +47,7 @@ if __name__ == "__main__":
     parser.add_argument("--total_records", type=int, required=True)
     parser.add_argument("--throughput", type=str, required=True, help="e.g. 10MB")
     parser.add_argument("--output", type=str, required=True)
-    parser.add_argument("--persistent", type=bool)
+    parser.add_argument("--persistent", dest='persistent', action='store_true')
 
     args = parser.parse_args()
 
