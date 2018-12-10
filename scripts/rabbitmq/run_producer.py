@@ -19,7 +19,7 @@ CMD_TEMPLATE = "runjava com.rabbitmq.perf.PerfTest " \
 def run_producer(user, password, host, queue_name, num_producers, record_size, total_records, throughput, output,
                  persistent=False):
     tz = timezone(TIMEZONE)
-    records_per_second = int((total_records * record_size) / throughput)
+    records_per_second = int(throughput / record_size)
     cmd = CMD_TEMPLATE.format(user=user, password=password, host=host,
                               num_producers=num_producers,
                               queue_name=queue_name,
