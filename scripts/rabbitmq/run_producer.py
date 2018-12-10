@@ -8,7 +8,7 @@ from pytz import timezone
 TIMEZONE = 'EST'
 
 CMD_TEMPLATE = "runjava com.rabbitmq.perf.PerfTest " \
-               "-h amqp://{user}:{password}@{host}" + \
+               "-h amqp://{user}:{password}@{host} " + \
                "-u {queue_name}" + \
                "-x {num_producers} -y 0 " + \
                "-s {record_size} " + \
