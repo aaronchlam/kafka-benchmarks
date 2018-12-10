@@ -47,6 +47,7 @@ if __name__ == "__main__":
     parser.add_argument("--total_records", type=int, required=True)
     parser.add_argument("--throughput", type=str, required=True, help="e.g. 10MB")
     parser.add_argument("--output", type=str, required=True)
+    parser.add_argument("--persistent", type=bool)
 
     args = parser.parse_args()
 
@@ -54,4 +55,4 @@ if __name__ == "__main__":
     record_size = int(bitmath.parse_string(args.record_size).to_Byte())
 
     run_producer(args.user, args.password, args.host, args.queue, args.num_producers, record_size, args.total_records,
-                 throughput, args.output)
+                 throughput, args.output, args.persistent)
