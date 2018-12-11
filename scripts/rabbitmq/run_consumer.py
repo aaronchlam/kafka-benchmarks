@@ -53,5 +53,8 @@ if __name__ == "__main__":
     throughput = int(bitmath.parse_string(args.throughput).to_Byte())
     record_size = int(bitmath.parse_string(args.record_size).to_Byte())
 
-    run_consumer(args.user, args.password, args.host, args.queue, args.num_consumers, record_size, args.total_records,
+    p = run_consumer(args.user, args.password, args.host, args.queue, args.num_consumers, record_size, args.total_records,
                  throughput, args.output)
+
+    exit_code = p.wait()
+    exit(exit_code)
