@@ -120,14 +120,14 @@ def stop_iostats(hosts):
     client.close()
 
 
-def run_producer_script(producers, num_instances, total_records, producer_throughput, data_dir):
+def run_producer_script(nodes, producers, num_instances, total_records, producer_throughput, data_dir):
     throughput_string = '{}MB'.format(producer_throughput)
     clients = {}
     stds = {}
     for producer in producers:
         print("producer: {}".format(producer))
         output_path = os.path.join(data_dir, 'producer-{}.txt'.format(producer))    # TODO: generalize here for more producers
-        py_cmd = RUN_PRODUCER_TEMPLATE.format(user=USER, password=PASSWORD, host=producer, queue=QUEUE_NAME,
+        py_cmd = RUN_PRODUCER_TEMPLATE.format(user=USER, password=PASSWORD, host=nodes[0], queue=QUEUE_NAME,
                                               num_producers=num_instances, record_size=RECORD_SIZE,
                                               total_records=total_records, throughput=throughput_string,
                                               output=output_path)
@@ -149,7 +149,8 @@ def run_trial(trial_num, nodes, consumers, producers, num_instances, producer_th
     start_iostats(nodes, data_dir)
 
     # run the run_producer.py script
-    producer_clients, producer_stds = run_producer_script(producers, num_instances, TOTAL_RECORDS, producer_throughput, data_dir)
+    producer_clients, producer_stds = run_producer_script(nodes, producers, num_instances, TOTAL_RECORDS,
+                                                          producer_throughput, data_dir)
 
     # run the consumer_benchmark_scripts
     #if num_clients > 0:
