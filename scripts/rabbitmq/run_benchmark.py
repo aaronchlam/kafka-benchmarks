@@ -170,6 +170,7 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
                                                           producer_throughput, data_dir)
 
     # run the run_consumer.py script
+    print(producer_instances)
     consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, producer_instances, TOTAL_RECORDS, data_dir)
 
     for producer in producers:
