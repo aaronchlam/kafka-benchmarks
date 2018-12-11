@@ -17,11 +17,11 @@ CMD_TEMPLATE = "runjava com.rabbitmq.perf.PerfTest " \
                "--predeclared "
 
 
-def run_consumer(user, password, host, queue_name, num_producers, record_size, total_records, throughput, output):
+def run_consumer(user, password, host, queue_name, num_consumers, record_size, total_records, throughput, output):
     tz = timezone(TIMEZONE)
     records_per_second = int(throughput / record_size)
     cmd = CMD_TEMPLATE.format(user=user, password=password, host=host,
-                              num_producers=num_producers,
+                              num_consumers=num_consumers,
                               queue_name=queue_name,
                               record_size=record_size,
                               total_records=total_records,
