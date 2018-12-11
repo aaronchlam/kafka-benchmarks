@@ -132,7 +132,7 @@ def run_producer_script(nodes, producers, num_instances, num_consumers, total_re
         print("producer: {}".format(producer))
         output_path = os.path.join(data_dir, 'producer-{}.txt'.format(producer))    # TODO: generalize here for more producers
         py_cmd = RUN_PRODUCER_TEMPLATE.format(user=USER, password=PASSWORD, host=nodes[0], exchange_name=EXCHANGE_NAME,
-                                              exchange_type=EXCHANGE_TYPE, queue=QUEUE_PATTERN,
+                                              exchange_type=EXCHANGE_TYPE, queue_pattern=QUEUE_PATTERN,
                                               num_producers=num_instances, num_consumers=num_consumers,
                                               record_size=RECORD_SIZE, total_records=total_records,
                                               throughput=throughput_string, output=output_path)
