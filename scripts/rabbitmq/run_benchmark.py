@@ -25,6 +25,7 @@ TOTAL_RECORDS = '100000000'
 SSH_NODE_PY_CMD_TEMPLATE = '''
 cd kafka-benchmarks/;
 . venv/bin/activate;
+{py_cmd}
 '''
 RUN_PRODUCER_TEMPLATE = 'run_producer.py --user {user} --password {password} --host {host} --queue {queue} ' + \
                         '--num-producers {num_producers} --record-size {record_size} ' + \
@@ -124,14 +125,12 @@ def run_producer_script(producers, num_instances, total_records, producer_throug
     clients = {}
     stds = {}
     for producer in producers:
-        print("producer: {}".format(producer))
         output_path = os.path.join(data_dir, 'producer-{}.txt'.format(producer))    # TODO: generalize here for more producers
         py_cmd = RUN_PRODUCER_TEMPLATE.format(user=USER, password=PASSWORD, host=producer, queue=QUEUE_NAME,
                                               num_producers=num_instances, record_size=RECORD_SIZE,
                                               total_records=total_records, throughput=throughput_string,
                                               output=output_path)
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
-        print(ssh_cmds)
 
         clients[producer] = open_ssh(producer)
         stds[producer] = clients[producer].exec_command(ssh_cmds)
