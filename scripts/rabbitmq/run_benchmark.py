@@ -22,7 +22,7 @@ EXCHANGE_NAME = 'benchmark-exchange'
 EXCHANGE_TYPE = 'fanout'
 QUEUE_PATTERN = 'benchmark-queue-%d'
 RECORD_SIZE = '512B'
-TOTAL_RECORDS = 10000000
+TOTAL_RECORDS = 100000
 
 SSH_NODE_PY_CMD_TEMPLATE = '''
 cd kafka-benchmarks/;
@@ -202,10 +202,10 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
 
 
 def run_experiments(nodes, consumers, producers):
-    start_throughput = 5
-    end_throughput = 55
-    step_throughput = 5
-    num_trials = 3
+    start_throughput = 1
+    end_throughput = 4
+    step_throughput = 1
+    num_trials = 2
     for throughput in range(start_throughput, end_throughput, step_throughput):
         print("\n========= RUNNING EXPERIMENT! ============\n")
         print("number of nodes: {}".format(len(nodes)))
