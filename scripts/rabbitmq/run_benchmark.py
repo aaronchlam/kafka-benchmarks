@@ -16,6 +16,23 @@ NODES_FILE = 'nodes'
 CONSUMERS_FILE = 'consumers'
 PRODUCERS_FILE = 'producers'
 
+USER = 'admin'
+PASSWORD = 'password'
+QUEUE_NAME = 'benchmark-queue'
+RECORD_SIZE = '512B'
+TOTAL_RECORDS = '100000000'
+
+SSH_NODE_PY_CMD_TEMPLATE = '''
+cd kafka-benchmarks/;
+. venv/bin/activate;
+'''
+RUN_PRODUCER_TEMPLATE = 'run_producer.py --user {user} --password {password} --host {host} --queue {queue} ' + \
+                        '--num-producers {num_producers} --record-size {record_size} ' + \
+                        '--total-records {total_records} --throughput {throughput} --output {output} '
+RUN_CONSUMER_TEMPLATE = 'run_producer.py --user {user} --password {password} --host {host} --queue {queue} ' + \
+                        '--num-producers {num_producers} --record-size {record_size} ' + \
+                        '--total-records {total_records} --throughput {throughput} --output {output} '
+
 
 def get_hostnames(filename):
     hostnames = []
@@ -102,7 +119,25 @@ def stop_iostats(hosts):
     client.close()
 
 
-def run_trial(trial_num, nodes, consumers, producers, producer_throughput):
+def run_producer_script(producers, num_instances, total_records, producer_throughput, data_dir):
+    throughput_string = '{}MB'.format(producer_throughput)
+    clients = {}
+    stds = {}
+    for producer in producers:
+        output_path = os.path.join(data_dir, 'producer-{}.txt'.format(producer))    # TODO: generalize here for more producers
+        py_cmd = RUN_PRODUCER_TEMPLATE.format(user=USER, password=PASSWORD, host=producer, queue=QUEUE_NAME,
+                                              num_producers=num_instances, record_size=RECORD_SIZE,
+                                              total_records=total_records, throughput=throughput_string,
+                                              output=output_path)
+        ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
+
+        clients[producer] = open_ssh(producer)
+        stds[producer] = clients[producer].exec_command(ssh_cmds)
+
+    return clients, stds
+
+
+def run_trial(trial_num, nodes, consumers, producers, num_instances, producer_throughput):
     # create test result directory
     data_dir = mkdir_benchmark_results(len(nodes), len(consumers), len(producers), producer_throughput, trial_num)
 
@@ -110,22 +145,21 @@ def run_trial(trial_num, nodes, consumers, producers, producer_throughput):
     start_vmstats(nodes, data_dir)
     start_iostats(nodes, data_dir)
 
-    # run the producer_benchmark_scripts
-    #producer_clients, producer_stds = run_producer_benchmark_script(producers, 50, zookeeper, data_dir)
+    # run the run_producer.py script
+    producer_clients, producer_stds = run_producer_script(producers, num_instances, TOTAL_RECORDS, producer_throughput, data_dir)
 
     # run the consumer_benchmark_scripts
     #if num_clients > 0:
     #    consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, num_clients, 50, brokers[0],
     #                                                                    zookeeper, data_dir)
 
-    time.sleep(30)
+    for producer in producers:
+        print("waiting on producers {} to finish".format(producer))
+        exit_status = producer_stds[producer][1].channel.recv_exit_status()
+        print("producer exist_status: {}".format(exit_status))
+        client = producer_clients[producer].close()
 
-    #for producer in producers:
-    #    print("wiating on producers {} to finish".format(producers))
-    #    exit_status = producer_stds[producer][1].channel.recv_exit_status()
-    #    print("producer exist_status: {}".format(exit_status))
-    #    client = producer_clients[producer].close()
-    #    print("done producers")
+    print("done producers")
 
     #if num_clients > 0:
     #    for consumer in consumers:
@@ -142,7 +176,7 @@ def run_trial(trial_num, nodes, consumers, producers, producer_throughput):
 
 
 def run_experiments(nodes, consumers, producers):
-    run_trial(0, nodes, consumers, producers, 20)
+    run_trial(0, nodes, consumers, producers, 1, 20)
 
 
 if __name__ == '__main__':
