@@ -78,8 +78,8 @@ def start_iostats(hosts, data_dir):
 
     for host in hosts:
         client = open_ssh(host)
-        vmstat_file_path = os.path.join(data_dir, 'iostat-{}.txt'.format(host))
-        stdin, stdout, stderr = client.exec_command(VMSTAT_START_CMD.format(path=vmstat_file_path))
+        iostat_file_path = os.path.join(data_dir, 'iostat-{}.txt'.format(host))
+        stdin, stdout, stderr = client.exec_command(IOSTAT_START_CMD.format(path=iostat_file_path))
         channels.append(stdout.channel)
 
     for channel in channels:
