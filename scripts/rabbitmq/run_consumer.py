@@ -45,7 +45,7 @@ if __name__ == "__main__":
     parser.add_argument("--num-consumers", type=int, required=True)
     parser.add_argument("--record-size", type=str, required=True, help="e.g. 256B")
     parser.add_argument("--total-records", type=int, required=True)
-    parser.add_argument("--throughput", type=str, default="0M", required=False, help="e.g. 10MB")
+    parser.add_argument("--throughput", type=str, default="0MB", required=False, help="e.g. 10MB")
     parser.add_argument("--output", type=str, required=True)
 
     args = parser.parse_args()
