@@ -9,7 +9,7 @@ TIMEZONE = 'EST'
 
 CMD_TEMPLATE = "runjava com.rabbitmq.perf.PerfTest " \
                "-h amqp://{user}:{password}@{host} " + \
-               "-u {queue_name}" + \
+               "-u {queue_name} " + \
                "-x 0 -y {num_consumers} " + \
                "-s {record_size} " + \
                "-D {total_records} " + \
@@ -40,9 +40,9 @@ if __name__ == "__main__":
     parser.add_argument("--password", type=str, required=True)
     parser.add_argument("--host", type=str, required=True)
     parser.add_argument("--queue", type=str, required=True)
-    parser.add_argument("--num_producers", type=int, required=True)
+    parser.add_argument("--num-consumers", type=int, required=True)
     parser.add_argument("--record-size", type=str, required=True, help="e.g. 256B")
-    parser.add_argument("--total_records", type=int, required=True)
+    parser.add_argument("--total-records", type=int, required=True)
     parser.add_argument("--throughput", type=str, required=True, help="e.g. 10MB")
     parser.add_argument("--output", type=str, required=True)
 
@@ -51,4 +51,5 @@ if __name__ == "__main__":
     throughput = int(bitmath.parse_string(args.throughput).to_Byte())
     record_size = int(bitmath.parse_string(args.record_size).to_Byte())
 
-    run_consumer(args.user, args.password, args.host, args.queue, args.num_producers, record_size, args.total_records, throughput, args.output)
+    run_consumer(args.user, args.password, args.host, args.queue, args.num_producers, record_size, args.total_records,
+                 throughput, args.output)
