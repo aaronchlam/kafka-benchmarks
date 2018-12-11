@@ -32,7 +32,7 @@ RUN_PRODUCER_TEMPLATE = 'run_producer.py --user {user} --password {password} --h
                         '--total-records {total_records} --throughput {throughput} --output {output} '
 RUN_CONSUMER_TEMPLATE = 'run_producer.py --user {user} --password {password} --host {host} --queue {queue} ' + \
                         '--num-producers {num_producers} --record-size {record_size} ' + \
-                        '--total-records {total_records} --throughput {throughput} --output {output} '
+                        '--total-records {total_records} --output {output} '
 
 
 def get_hostnames(filename):
