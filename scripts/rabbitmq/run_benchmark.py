@@ -151,6 +151,7 @@ def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir
                                               num_producers=num_instances, record_size=RECORD_SIZE,
                                               total_records=records_per_consumer, output=output_path)
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
+        print(ssh_cmds)
 
         clients[consumer] = open_ssh(consumer)
         stds[consumer] = clients[consumer].exec_command(ssh_cmds)
