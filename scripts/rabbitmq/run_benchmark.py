@@ -172,12 +172,12 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
     start_vmstats(nodes, data_dir)
     start_iostats(nodes, data_dir)
 
+    # run the run_consumer.py script
+    consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, consumer_instances, TOTAL_RECORDS, data_dir)
+
     # run the run_producer.py script
     producer_clients, producer_stds = run_producer_script(nodes, producers, producer_instances, len(consumers),
                                                           TOTAL_RECORDS, producer_throughput, data_dir)
-
-    # run the run_consumer.py script
-    consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, consumer_instances, TOTAL_RECORDS, data_dir)
 
     for producer in producers:
         print("waiting on producers {} to finish".format(producer))
