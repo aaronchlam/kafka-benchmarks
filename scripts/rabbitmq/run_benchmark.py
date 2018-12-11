@@ -144,6 +144,7 @@ def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir
     clients = {}
     stds = {}
     records_per_consumer = total_records // (len(consumers) * num_instances)
+    print('records_per_consumer: {}'.format(records_per_consumer))
     for consumer in consumers:
         output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))    # TODO: generalize here for more producers
         py_cmd = RUN_CONSUMER_TEMPLATE.format(user=USER, password=PASSWORD, host=nodes[0], queue=QUEUE_NAME,
