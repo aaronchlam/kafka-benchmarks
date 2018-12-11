@@ -18,7 +18,9 @@ PRODUCERS_FILE = 'producers'
 
 USER = 'admin'
 PASSWORD = 'password'
-QUEUE_NAME = 'benchmark-queue'
+EXCHANGE_NAME = 'benchmark-exchange'
+EXCHANGE_TYPE = 'fanout'
+QUEUE_PATTERN = 'benchmark-queue-%d'
 RECORD_SIZE = '512B'
 TOTAL_RECORDS = 10000000
 
@@ -27,9 +29,11 @@ cd kafka-benchmarks/;
 . venv/bin/activate;
 {py_cmd}
 '''
-RUN_PRODUCER_TEMPLATE = 'run_producer.py --user {user} --password {password} --host {host} --queue {queue} ' + \
-                        '--num-producers {num_producers} --record-size {record_size} ' + \
-                        '--total-records {total_records} --throughput {throughput} --output {output} '
+RUN_PRODUCER_TEMPLATE = 'run_producer.py --user {user} --password {password} --host {host} ' + \
+                        '--exchange {exchange_name} --exchange-type {exchange_type} --queue-pattern {queue_pattern}' + \
+                        '--num-producers {num_producers} --num-consumers {num_consumers} ' + \
+                        '--record-size {record_size} --total-records {total_records} --throughput {throughput} ' + \
+                        '--output {output} '
 RUN_CONSUMER_TEMPLATE = 'run_consumer.py --user {user} --password {password} --host {host} --queue {queue} ' + \
                         '--num-consumers {num_consumers} --record-size {record_size} ' + \
                         '--total-records {total_records} --output {output} '
@@ -120,17 +124,18 @@ def stop_iostats(hosts):
     client.close()
 
 
-def run_producer_script(nodes, producers, num_instances, total_records, producer_throughput, data_dir):
+def run_producer_script(nodes, producers, num_instances, num_consumers, total_records, producer_throughput, data_dir):
     throughput_string = '{}MB'.format(producer_throughput)
     clients = {}
     stds = {}
     for producer in producers:
         print("producer: {}".format(producer))
         output_path = os.path.join(data_dir, 'producer-{}.txt'.format(producer))    # TODO: generalize here for more producers
-        py_cmd = RUN_PRODUCER_TEMPLATE.format(user=USER, password=PASSWORD, host=nodes[0], queue=QUEUE_NAME,
-                                              num_producers=num_instances, record_size=RECORD_SIZE,
-                                              total_records=total_records, throughput=throughput_string,
-                                              output=output_path)
+        py_cmd = RUN_PRODUCER_TEMPLATE.format(user=USER, password=PASSWORD, host=nodes[0], exchange_name=EXCHANGE_NAME,
+                                              exchange_type=EXCHANGE_TYPE, queue=QUEUE_PATTERN,
+                                              num_producers=num_instances, num_consumers=num_consumers,
+                                              record_size=RECORD_SIZE, total_records=total_records,
+                                              throughput=throughput_string, output=output_path)
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
         print(ssh_cmds)
 
@@ -144,10 +149,10 @@ def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir
     clients = {}
     stds = {}
     records_per_consumer = total_records // (len(consumers) * num_instances)
-    for consumer in consumers:
+    for idx, consumer in enumerate(consumers):
         output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))    # TODO: generalize here for more producers
         print('output_path: {}'.format(output_path))
-        py_cmd = RUN_CONSUMER_TEMPLATE.format(user=USER, password=PASSWORD, host=nodes[0], queue=QUEUE_NAME,
+        py_cmd = RUN_CONSUMER_TEMPLATE.format(user=USER, password=PASSWORD, host=nodes[0], queue=QUEUE_PATTERN % (idx),
                                               num_consumers=num_instances, record_size=RECORD_SIZE,
                                               total_records=records_per_consumer, output=output_path)
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
@@ -168,8 +173,8 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
     start_iostats(nodes, data_dir)
 
     # run the run_producer.py script
-    producer_clients, producer_stds = run_producer_script(nodes, producers, producer_instances, TOTAL_RECORDS,
-                                                          producer_throughput, data_dir)
+    producer_clients, producer_stds = run_producer_script(nodes, producers, producer_instances, len(consumers),
+                                                          TOTAL_RECORDS, producer_throughput, data_dir)
 
     # run the run_consumer.py script
     consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, consumer_instances, TOTAL_RECORDS, data_dir)
