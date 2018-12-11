@@ -30,10 +30,10 @@ cd kafka-benchmarks/;
 {py_cmd}
 '''
 RUN_PRODUCER_TEMPLATE = 'run_producer.py --user {user} --password {password} --host {host} ' + \
-                        '--exchange {exchange_name} --exchange-type {exchange_type} --queue-pattern {queue_pattern}' + \
-                        '--num-producers {num_producers} --num-consumers {num_consumers} ' + \
-                        '--record-size {record_size} --total-records {total_records} --throughput {throughput} ' + \
-                        '--output {output} '
+                        '--exchange {exchange_name} --exchange-type {exchange_type} ' + \
+                        '--queue-pattern {queue_pattern} --num-producers {num_producers} ' \
+                        '--num-consumers {num_consumers} --record-size {record_size} ' + \
+                        '--total-records {total_records} --throughput {throughput} --output {output} '
 RUN_CONSUMER_TEMPLATE = 'run_consumer.py --user {user} --password {password} --host {host} --queue {queue} ' + \
                         '--num-consumers {num_consumers} --record-size {record_size} ' + \
                         '--total-records {total_records} --output {output} '
