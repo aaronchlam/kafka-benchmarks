@@ -144,9 +144,9 @@ def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir
     clients = {}
     stds = {}
     records_per_consumer = total_records // (len(consumers) * num_instances)
-    print('records_per_consumer: {}'.format(records_per_consumer))
     for consumer in consumers:
         output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))    # TODO: generalize here for more producers
+        print('output_path: {}'.format(output_path))
         py_cmd = RUN_CONSUMER_TEMPLATE.format(user=USER, password=PASSWORD, host=nodes[0], queue=QUEUE_NAME,
                                               num_producers=num_instances, record_size=RECORD_SIZE,
                                               total_records=records_per_consumer, output=output_path)
@@ -160,7 +160,7 @@ def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir
 
 def run_trial(trial_num, nodes, consumers, producers, consumer_instances, producer_instances, producer_throughput):
     # create test result directory
-    data_dir = mkdir_benchmark_results(len(nodes), len(consumers), len(producers), producer_throughput, trial_num)
+    data_dir = mkdir_benchmark_results(len(nodes), len(producers), len(consumers), producer_throughput, trial_num)
 
     # start vmstat & iostat
     start_vmstats(nodes, data_dir)
