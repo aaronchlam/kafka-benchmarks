@@ -20,7 +20,7 @@ USER = 'admin'
 PASSWORD = 'password'
 QUEUE_NAME = 'benchmark-queue'
 RECORD_SIZE = '512B'
-TOTAL_RECORDS = '100000000'
+TOTAL_RECORDS = 10000000
 
 SSH_NODE_PY_CMD_TEMPLATE = '''
 cd kafka-benchmarks/;
@@ -180,7 +180,7 @@ def run_trial(trial_num, nodes, consumers, producers, num_instances, producer_th
 
 
 def run_experiments(nodes, consumers, producers):
-    run_trial(0, nodes, consumers, producers, 1, 20)
+    run_trial(0, nodes, consumers, producers, 1, 100)
 
 
 if __name__ == '__main__':
