@@ -30,7 +30,7 @@ cd kafka-benchmarks/;
 RUN_PRODUCER_TEMPLATE = 'run_producer.py --user {user} --password {password} --host {host} --queue {queue} ' + \
                         '--num-producers {num_producers} --record-size {record_size} ' + \
                         '--total-records {total_records} --throughput {throughput} --output {output} '
-RUN_CONSUMER_TEMPLATE = 'run_producer.py --user {user} --password {password} --host {host} --queue {queue} ' + \
+RUN_CONSUMER_TEMPLATE = 'run_consumer.py --user {user} --password {password} --host {host} --queue {queue} ' + \
                         '--num-producers {num_producers} --record-size {record_size} ' + \
                         '--total-records {total_records} --output {output} '
 
