@@ -31,7 +31,7 @@ RUN_PRODUCER_TEMPLATE = 'run_producer.py --user {user} --password {password} --h
                         '--num-producers {num_producers} --record-size {record_size} ' + \
                         '--total-records {total_records} --throughput {throughput} --output {output} '
 RUN_CONSUMER_TEMPLATE = 'run_consumer.py --user {user} --password {password} --host {host} --queue {queue} ' + \
-                        '--num-producers {num_producers} --record-size {record_size} ' + \
+                        '--num-consumers {num_consumers} --record-size {record_size} ' + \
                         '--total-records {total_records} --output {output} '
 
 
@@ -148,7 +148,7 @@ def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir
         output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))    # TODO: generalize here for more producers
         print('output_path: {}'.format(output_path))
         py_cmd = RUN_CONSUMER_TEMPLATE.format(user=USER, password=PASSWORD, host=nodes[0], queue=QUEUE_NAME,
-                                              num_producers=num_instances, record_size=RECORD_SIZE,
+                                              num_consumers=num_instances, record_size=RECORD_SIZE,
                                               total_records=records_per_consumer, output=output_path)
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
         print(ssh_cmds)
@@ -168,11 +168,11 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
     start_iostats(nodes, data_dir)
 
     # run the run_producer.py script
-    # producer_clients, producer_stds = run_producer_script(nodes, producers, consumer_instances, TOTAL_RECORDS,
+    # producer_clients, producer_stds = run_producer_script(nodes, producers, producer_instances, TOTAL_RECORDS,
     #                                                       producer_throughput, data_dir)
 
     # run the run_consumer.py script
-    consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, producer_instances, TOTAL_RECORDS, data_dir)
+    consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, consumer_instances, TOTAL_RECORDS, data_dir)
 
     # for producer in producers:
     #     print("waiting on producers {} to finish".format(producer))
