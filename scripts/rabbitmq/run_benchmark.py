@@ -143,7 +143,7 @@ def run_producer_script(nodes, producers, num_instances, total_records, producer
 def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir):
     clients = {}
     stds = {}
-    records_per_consumer = total_records // (consumers * num_instances)
+    records_per_consumer = total_records // (len(consumers) * num_instances)
     for consumer in consumers:
         output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))    # TODO: generalize here for more producers
         py_cmd = RUN_CONSUMER_TEMPLATE.format(user=USER, password=PASSWORD, host=nodes[0], queue=QUEUE_NAME,
@@ -166,18 +166,17 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
     start_iostats(nodes, data_dir)
 
     # run the run_producer.py script
-    producer_clients, producer_stds = run_producer_script(nodes, producers, consumer_instances, TOTAL_RECORDS,
-                                                          producer_throughput, data_dir)
+    # producer_clients, producer_stds = run_producer_script(nodes, producers, consumer_instances, TOTAL_RECORDS,
+    #                                                       producer_throughput, data_dir)
 
     # run the run_consumer.py script
-    print(producer_instances)
     consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, producer_instances, TOTAL_RECORDS, data_dir)
 
-    for producer in producers:
-        print("waiting on producers {} to finish".format(producer))
-        exit_status = producer_stds[producer][1].channel.recv_exit_status()
-        print("producer exist_status: {}".format(exit_status))
-        client = producer_clients[producer].close()
+    # for producer in producers:
+    #     print("waiting on producers {} to finish".format(producer))
+    #     exit_status = producer_stds[producer][1].channel.recv_exit_status()
+    #     print("producer exist_status: {}".format(exit_status))
+    #     client = producer_clients[producer].close()
 
     print("done producers")
 
