@@ -173,7 +173,7 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
     start_iostats(nodes, data_dir)
 
     # run the run_consumer.py script
-    consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, consumer_instances, TOTAL_RECORDS, data_dir)
+    # consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, consumer_instances, TOTAL_RECORDS, data_dir)
 
     # run the run_producer.py script
     producer_clients, producer_stds = run_producer_script(nodes, producers, producer_instances, len(consumers),
@@ -187,14 +187,14 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
 
     print("done producers")
 
-    if consumer_instances > 0:
-        for consumer in consumers:
-            if consumer in consumer_clients:
-                print("waiting on consumer {} to finish".format(consumer))
-                exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
-                print("consumer exit status: {}".format(exit_status))
+    # if consumer_instances > 0:
+    #     for consumer in consumers:
+    #         if consumer in consumer_clients:
+    #             print("waiting on consumer {} to finish".format(consumer))
+    #             exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
+    #             print("consumer exit status: {}".format(exit_status))
 
-                client = consumer_clients[consumer].close()
+    #             client = consumer_clients[consumer].close()
 
     # end vmstat & iostat
     stop_vmstats(nodes)
