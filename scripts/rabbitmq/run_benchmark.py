@@ -20,7 +20,7 @@ USER = 'admin'
 PASSWORD = 'password'
 QUEUE_NAME = 'benchmark-queue'
 RECORD_SIZE = '512B'
-TOTAL_RECORDS = 10000000
+TOTAL_RECORDS = 1000000
 
 SSH_NODE_PY_CMD_TEMPLATE = '''
 cd kafka-benchmarks/;
@@ -140,7 +140,24 @@ def run_producer_script(nodes, producers, num_instances, total_records, producer
     return clients, stds
 
 
-def run_trial(trial_num, nodes, consumers, producers, num_instances, producer_throughput):
+def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir):
+    clients = {}
+    stds = {}
+    records_per_consumer = total_records // (consumers * num_instances)
+    for consumer in consumers:
+        output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))    # TODO: generalize here for more producers
+        py_cmd = RUN_CONSUMER_TEMPLATE.format(user=USER, password=PASSWORD, host=nodes[0], queue=QUEUE_NAME,
+                                              num_producers=num_instances, record_size=RECORD_SIZE,
+                                              total_records=records_per_consumer, output=output_path)
+        ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
+
+        clients[consumer] = open_ssh(consumer)
+        stds[consumer] = clients[consumer].exec_command(ssh_cmds)
+
+    return clients, stds
+
+
+def run_trial(trial_num, nodes, consumers, producers, consumer_instances, producer_instances, producer_throughput):
     # create test result directory
     data_dir = mkdir_benchmark_results(len(nodes), len(consumers), len(producers), producer_throughput, trial_num)
 
@@ -149,13 +166,11 @@ def run_trial(trial_num, nodes, consumers, producers, num_instances, producer_th
     start_iostats(nodes, data_dir)
 
     # run the run_producer.py script
-    producer_clients, producer_stds = run_producer_script(nodes, producers, num_instances, TOTAL_RECORDS,
+    producer_clients, producer_stds = run_producer_script(nodes, producers, consumer_instances, TOTAL_RECORDS,
                                                           producer_throughput, data_dir)
 
-    # run the consumer_benchmark_scripts
-    #if num_clients > 0:
-    #    consumer_clients, consumer_stds = run_consumer_benchmark_script(consumers, num_clients, 50, brokers[0],
-    #                                                                    zookeeper, data_dir)
+    # run the run_consumer.py script
+    consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, producer_instances, TOTAL_RECORDS, data_dir)
 
     for producer in producers:
         print("waiting on producers {} to finish".format(producer))
@@ -165,14 +180,14 @@ def run_trial(trial_num, nodes, consumers, producers, num_instances, producer_th
 
     print("done producers")
 
-    #if num_clients > 0:
-    #    for consumer in consumers:
-    #        if consumer in consumer_clients:
-    #            print("waiting on consumer {} to finish".format(consumer))
-    #            exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
-    #            print("consumer exit status: {}".format(exit_status))
+    if consumer_instances > 0:
+        for consumer in consumers:
+            if consumer in consumer_clients:
+                print("waiting on consumer {} to finish".format(consumer))
+                exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
+                print("consumer exit status: {}".format(exit_status))
 
-    #            client = consumer_clients[consumer].close()
+                client = consumer_clients[consumer].close()
 
     # end vmstat & iostat
     stop_vmstats(nodes)
@@ -180,7 +195,7 @@ def run_trial(trial_num, nodes, consumers, producers, num_instances, producer_th
 
 
 def run_experiments(nodes, consumers, producers):
-    run_trial(0, nodes, consumers, producers, 1, 100)
+    run_trial(0, nodes, consumers, producers, 1, 1, 50)
 
 
 if __name__ == '__main__':
