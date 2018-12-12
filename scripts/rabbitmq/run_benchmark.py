@@ -22,7 +22,7 @@ EXCHANGE_NAME = 'benchmark-exchange'
 EXCHANGE_TYPE = 'fanout'
 QUEUE_PATTERN = 'benchmark-queue-%d'
 RECORD_SIZE = '512B'
-TOTAL_RECORDS = 10000000
+TOTAL_RECORDS = 100000
 
 SSH_NODE_PY_CMD_TEMPLATE = '''
 cd kafka-benchmarks/;
@@ -54,11 +54,16 @@ def open_ssh(hostname):
     return client
 
 
-def mkdir_benchmark_results(num_nodes, num_producers, num_consumers, producer_throughput, trial):
+def mkdir_benchmark_results(num_nodes, num_producers, num_consumers, producer_throughput, trial, persistent=False):
     # TODO: generalize for not just producer throughput
-    mkdir_path = os.path.join(DATA_DIR, '{}-nodes'.format(num_nodes),
-                              '{}-producers'.format(num_producers), '{}-consumers'.format(num_consumers),
-                              '{}-throughput'.format(producer_throughput), '{}-trial'.format(trial))
+    if not persistent:
+        mkdir_path = os.path.join(DATA_DIR, '{}-nodes'.format(num_nodes),
+                                  '{}-producers'.format(num_producers), '{}-consumers'.format(num_consumers),
+                                  '{}-throughput'.format(producer_throughput), '{}-trial'.format(trial))
+    else:
+        mkdir_path = os.path.join(DATA_DIR, 'persistent', '{}-nodes'.format(num_nodes),
+                                  '{}-producers'.format(num_producers), '{}-consumers'.format(num_consumers),
+                                  '{}-throughput'.format(producer_throughput), '{}-trial'.format(trial))
     print('Making directory... {}'.format(mkdir_path))
 
     os.makedirs(mkdir_path, exist_ok=True)
@@ -124,7 +129,8 @@ def stop_iostats(hosts):
     client.close()
 
 
-def run_producer_script(nodes, producers, num_instances, num_consumers, total_records, producer_throughput, data_dir):
+def run_producer_script(nodes, producers, num_instances, num_consumers, total_records, producer_throughput, data_dir,
+                        persistent=False):
     throughput_string = '{}MB'.format(producer_throughput)
     clients = {}
     stds = {}
@@ -136,6 +142,8 @@ def run_producer_script(nodes, producers, num_instances, num_consumers, total_re
                                               num_producers=num_instances, num_consumers=num_consumers,
                                               record_size=RECORD_SIZE, total_records=total_records,
                                               throughput=throughput_string, output=output_path)
+        if persistent:
+            py_cmd += "--persistent"
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
         print(ssh_cmds)
 
@@ -164,9 +172,11 @@ def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir
     return clients, stds
 
 
-def run_trial(trial_num, nodes, consumers, producers, consumer_instances, producer_instances, producer_throughput):
+def run_trial(trial_num, nodes, consumers, producers, consumer_instances, producer_instances, producer_throughput,
+              persistent=False):
     # create test result directory
-    data_dir = mkdir_benchmark_results(len(nodes), len(producers), len(consumers), producer_throughput, trial_num)
+    data_dir = mkdir_benchmark_results(len(nodes), len(producers), len(consumers), producer_throughput, trial_num,
+                                       persistent=persistent)
 
     # start vmstat & iostat
     start_vmstats(nodes, data_dir)
@@ -177,7 +187,8 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
 
     # run the run_producer.py script
     producer_clients, producer_stds = run_producer_script(nodes, producers, producer_instances, len(consumers),
-                                                          TOTAL_RECORDS, producer_throughput, data_dir)
+                                                          TOTAL_RECORDS, producer_throughput, data_dir,
+                                                          persistent=persistent)
 
     for producer in producers:
         print("waiting on producers {} to finish".format(producer))
@@ -203,9 +214,9 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
 
 def run_experiments(nodes, consumers, producers):
     start_throughput = 5
-    end_throughput = 55
+    end_throughput = 15
     step_throughput = 5
-    num_trials = 3
+    num_trials = 2
     for throughput in range(start_throughput, end_throughput, step_throughput):
         print("\n========= RUNNING EXPERIMENT! ============\n")
         print("number of nodes: {}".format(len(nodes)))
@@ -214,7 +225,7 @@ def run_experiments(nodes, consumers, producers):
         print("THROUGHPUT: {}MB".format(throughput))
         for trial in range(num_trials):
             print("\n---- TRIAL {} -----".format(trial))
-            run_trial(trial, nodes, consumers, producers, 1, 1, throughput)
+            run_trial(trial, nodes, consumers, producers, 1, 1, throughput, persistent=True)    # TODO: switch the persistent flag here
             print("------------------\n\n")
 
 
