@@ -164,7 +164,7 @@ def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir
                                               num_consumers=num_instances, record_size=RECORD_SIZE,
                                               total_records=records_per_consumer, output=output_path)
         if persistent:
-            py_cmd += '-f persistent '
+            py_cmd += '--persistent '
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
         print(ssh_cmds)
 
