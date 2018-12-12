@@ -18,7 +18,8 @@ CMD_TEMPLATE = "runjava com.rabbitmq.perf.PerfTest " \
                "--predeclared -ms "
 
 
-def run_consumer(user, password, host, queue_name, num_consumers, record_size, total_records, throughput, output):
+def run_consumer(user, password, host, queue_name, num_consumers, record_size, total_records, throughput, output,
+                 persistent=False):
     tz = timezone(TIMEZONE)
     cmd = CMD_TEMPLATE.format(user=user, password=password, host=host,
                               num_consumers=num_consumers,
@@ -28,6 +29,8 @@ def run_consumer(user, password, host, queue_name, num_consumers, record_size, t
     if throughput > 0:
         records_per_second = int(throughput / record_size)
         cmd += "-R {records_per_second} ".format(records_per_second=records_per_second)
+    if persistent:
+        cmd += "-f persistent "
     with open(os.path.abspath(output), 'w') as output_file:
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True, shell=True)
         for line in p.stdout:
@@ -47,6 +50,7 @@ if __name__ == "__main__":
     parser.add_argument("--total-records", type=int, required=True)
     parser.add_argument("--throughput", type=str, default="0MB", required=False, help="e.g. 10MB")
     parser.add_argument("--output", type=str, required=True)
+    parser.add_argument("--persistent", dest='persistent', action='store_true')
 
     args = parser.parse_args()
 
@@ -54,7 +58,7 @@ if __name__ == "__main__":
     record_size = int(bitmath.parse_string(args.record_size).to_Byte())
 
     p = run_consumer(args.user, args.password, args.host, args.queue, args.num_consumers, record_size, args.total_records,
-                 throughput, args.output)
+                 throughput, args.output, args.persistent)
 
     exit_code = p.wait()
     exit(exit_code)
