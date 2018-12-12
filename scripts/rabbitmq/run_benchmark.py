@@ -153,7 +153,7 @@ def run_producer_script(nodes, producers, num_instances, num_consumers, total_re
     return clients, stds
 
 
-def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir):
+def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir, persistent=False):
     clients = {}
     stds = {}
     records_per_consumer = total_records // (len(consumers) * num_instances)
@@ -163,6 +163,8 @@ def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir
         py_cmd = RUN_CONSUMER_TEMPLATE.format(user=USER, password=PASSWORD, host=nodes[0], queue=QUEUE_PATTERN % (idx),
                                               num_consumers=num_instances, record_size=RECORD_SIZE,
                                               total_records=records_per_consumer, output=output_path)
+        if persistent:
+            py_cmd += '-f persistent '
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
         print(ssh_cmds)
 
@@ -183,7 +185,8 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
     start_iostats(nodes, data_dir)
 
     # run the run_consumer.py script
-    consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, consumer_instances, TOTAL_RECORDS, data_dir)
+    consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, consumer_instances, TOTAL_RECORDS, data_dir,
+                                                          persistent=persistent)
 
     # run the run_producer.py script
     producer_clients, producer_stds = run_producer_script(nodes, producers, producer_instances, len(consumers),
