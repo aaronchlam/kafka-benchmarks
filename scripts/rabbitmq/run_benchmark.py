@@ -228,7 +228,7 @@ def run_experiments(nodes, consumers, producers):
         print("THROUGHPUT: {}MB".format(throughput))
         for trial in range(num_trials):
             print("\n---- TRIAL {} -----".format(trial))
-            run_trial(trial, nodes, consumers, producers, 1, 1, throughput, persistent=False)    # TODO: switch the persistent flag here
+            run_trial(trial, nodes, consumers, producers, 1, 1, throughput, persistent=True)    # TODO: switch the persistent flag here
             print("------------------\n\n")
 
 
