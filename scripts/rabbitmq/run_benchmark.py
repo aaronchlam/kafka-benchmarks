@@ -216,10 +216,10 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
 
 
 def run_experiments(nodes, consumers, producers):
-    start_throughput = 5
-    end_throughput = 55
-    step_throughput = 5
-    num_trials = 3
+    start_throughput = 1
+    end_throughput = 15
+    step_throughput = 1
+    num_trials = 1
     for throughput in range(start_throughput, end_throughput, step_throughput):
         print("\n========= RUNNING EXPERIMENT! ============\n")
         print("number of nodes: {}".format(len(nodes)))
