@@ -216,7 +216,7 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
 
 
 def run_experiments(nodes, consumers, producers):
-    start_throughput = 10
+    start_throughput = 1
     end_throughput = 15
     step_throughput = 1
     num_trials = 1
