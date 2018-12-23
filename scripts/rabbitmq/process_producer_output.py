@@ -114,7 +114,7 @@ def unpack_throughput_data(throughput_data, replicas):
 
 def get_persistent_data(data_dir):
     throughput_data = defaultdict(list)
-    for replicas in range(2, 4):
+    for replicas in range(1, 4):
         for throughput in range(1, 10):
             throughput_filepath = filepath_to_experiment(data_dir, replicas, 1, 1, throughput)
             # process_trials(throughput_filepath)
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     dfs = defaultdict(dict)
 
     throughput_data = defaultdict(list)
-    for replicas in range(2, 4):
+    for replicas in range(1, 4):
         for throughput in range(1, 15):
             throughput_filepath = filepath_to_experiment(DATA_DIR, replicas, 1, 1, throughput)
             # process_trials(throughput_filepath)
@@ -155,7 +155,7 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots()
 
-    for replicas in range(2, 4):
+    for replicas in range(1, 4):
         means = sorted(throughput_data[replicas], key=lambda t: t[0])
         producers, consumers, low, high = zip(*means)
 
@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
     producers, consumers, low, high = unpack_throughput_data(throughput_data, 2)
     ax.errorbar(producers[:7] + producers[-1:], consumers[:7] + consumers[-1:], yerr=(low[:7] + low[-1:], high[:7] + high[-1:]),
-                 fmt='-^',
+                 fmt='-o',
                  barsabove=True,
                  color='#58D68D',
                  ecolor='k',
@@ -189,7 +189,7 @@ if __name__ == '__main__':
 
     producers, consumers, low, high = unpack_throughput_data(persistent_data, 2)
     ax.errorbar(producers[:3] + producers[-1:], consumers[:3] + consumers[-1:], yerr=(low[:3] + low[-1:], high[:3] + high[-1:]),
-                 fmt='-o',
+                 fmt='-^',
                  barsabove=True,
                  color='#633974',
                  ecolor='k',
@@ -213,7 +213,7 @@ if __name__ == '__main__':
 
     producers, consumers, low, high = unpack_throughput_data(throughput_data, 3)
     ax.errorbar(producers[:7] + producers[-1:], consumers[:7] + consumers[-1:], yerr=(low[:7] + low[-1:], high[:7] + high[-1:]),
-                 fmt='-s',
+                 fmt='-o',
                  color='#EB984E',
                  barsabove=True,
                  ecolor='k',
@@ -227,7 +227,7 @@ if __name__ == '__main__':
 
     producers, consumers, low, high = unpack_throughput_data(persistent_data, 3)
     ax.errorbar(producers[:3] + producers[-1:], consumers[:3] + consumers[-1:], yerr=(low[:3] + low[-1:], high[:3] + high[-1:]),
-                 fmt='-s',
+                 fmt='-^',
                  color='#1F618D',
                  barsabove=True,
                  ecolor='k',
@@ -246,3 +246,43 @@ if __name__ == '__main__':
     ax.set_ylabel('Consumer Throughput (MB/s)')
     ax.legend()
     fig.savefig('replicas-3.eps')
+
+    fig, ax = plt.subplots()
+
+    producers, consumers, low, high = unpack_throughput_data(throughput_data, 1)
+    print('throughput_data:\n{}'.format(producers))
+    ax.errorbar(producers[:8] + producers[-1:], consumers[:8] + consumers[-1:], yerr=(low[:8] + low[-1:], high[:8] + high[-1:]),
+                fmt='-o',
+                color='#5DADE2',
+                barsabove=True,
+                ecolor='k',
+                capsize=2,
+                capthick=2,
+                elinewidth=2,
+                markersize=8,
+                #markeredgewidth=1,
+                #markeredgecolor='k',
+                label='persistent=False')
+
+    producers, consumers, low, high = unpack_throughput_data(persistent_data, 1)
+    print("persistent-data:\n{}".format(producers))
+    ax.errorbar(producers[:3] + producers[-1:], consumers[:3] + producers[-1:], yerr=(low[:3] + low[-1:], high[:3] + low[-1:]),
+                fmt='-^',
+                color='#388E3C',
+                barsabove=True,
+                ecolor='k',
+                capsize=2,
+                capthick=2,
+                elinewidth=2,
+                markersize=8,
+                #markeredgewidth=1,
+                #markeredgecolor='k',
+                label='persistent=False')
+
+    ax.set_ylim(bottom=0)
+    ax.set_xlim(left=0)
+    ax.set_title('Replication Factor of 1')
+    ax.set_xlabel('Producer Throughput (MB/s)')
+    ax.set_ylabel('Consumer Throughput (MB/s)')
+    ax.legend()
+    fig.savefig('replicas-1.eps')
