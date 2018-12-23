@@ -174,6 +174,64 @@ def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir
     return clients, stds
 
 
+def run_trial_increasing_clients(trial_num, nodes, consumers, producers, consumer_instances, producer_instances, producer_throughput,
+              persistent=False):
+    # create test result directory
+    data_dir = mkdir_benchmark_results_increasing_clients(len(nodes), len(producers), len(consumers), producer_throughput, trial_num,
+                                       persistent=persistent)
+
+    # start vmstat & iostat
+    start_vmstats(nodes, data_dir)
+    start_iostats(nodes, data_dir)
+
+    # run the run_consumer.py script
+    consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, consumer_instances, TOTAL_RECORDS, data_dir,
+                                                          persistent=persistent)
+
+    # run the run_producer.py script
+    producer_clients, producer_stds = run_producer_script(nodes, producers, producer_instances, len(consumers),
+                                                          TOTAL_RECORDS, producer_throughput, data_dir,
+                                                          persistent=persistent)
+
+    for producer in producers:
+        print("waiting on producers {} to finish".format(producer))
+        exit_status = producer_stds[producer][1].channel.recv_exit_status()
+        print("producer exist_status: {}".format(exit_status))
+        client = producer_clients[producer].close()
+
+    print("done producers")
+
+    if consumer_instances > 0:
+        for consumer in consumers:
+            if consumer in consumer_clients:
+                print("waiting on consumer {} to finish".format(consumer))
+                exit_status = consumer_stds[consumer][1].channel.recv_exit_status()
+                print("consumer exit status: {}".format(exit_status))
+
+                client = consumer_clients[consumer].close()
+
+    # end vmstat & iostat
+    stop_vmstats(nodes)
+    stop_iostats(nodes)
+
+def mkdir_benchmark_results_increasing_clients(num_nodes, num_producers, num_consumers, producer_throughput, trial,
+                                               persistent=False):
+    # TODO: generalize for not just producer throughput
+    if not persistent:
+        mkdir_path = os.path.join(DATA_DIR, 'increasing-clients', '{}-nodes'.format(num_nodes),
+                                  '{}-producers'.format(num_producers), '{}-consumers'.format(num_consumers),
+                                  '{}-throughput'.format(producer_throughput), '{}-trial'.format(trial))
+    else:
+        mkdir_path = os.path.join(DATA_DIR, 'increasing-clients','persistent', '{}-nodes'.format(num_nodes),
+                                  '{}-producers'.format(num_producers), '{}-consumers'.format(num_consumers),
+                                  '{}-throughput'.format(producer_throughput), '{}-trial'.format(trial))
+    print('Making directory... {}'.format(mkdir_path))
+
+    os.makedirs(mkdir_path, exist_ok=True)
+
+    return mkdir_path
+
+
 def run_trial(trial_num, nodes, consumers, producers, consumer_instances, producer_instances, producer_throughput,
               persistent=False):
     # create test result directory
@@ -232,6 +290,22 @@ def run_experiments(nodes, consumers, producers):
             print("------------------\n\n")
 
 
+def run_increasing_clients_experiment(nodes, consumers, producers):
+    start_consumers = 1
+    end_consumers = 3
+    step_consumers = 1
+    num_trials = 1
+    for num_consumers in range(start_consumers, end_consumers, step_consumers):
+        print("\n========= RUNNING EXPERIMENT! ============\n")
+        print("number of nodes: {}".format(len(nodes)))
+        print("number of producers: {}".format(len(producers)))
+        print("number_of consumer: {}".format(len(consumers)))
+        for trial in range(num_trials):
+            print("\n---- TRIAL {} -----".format(trial))
+            run_trial(trial, nodes, consumers, producers, num_consumers, 1, 15)    # TODO: switch the persistent flag here
+            print("------------------\n\n")
+
+
 if __name__ == '__main__':
     scripts_dir = os.path.dirname(os.path.realpath(__file__))
     nodes = get_hostnames(os.path.join(scripts_dir, NODES_FILE))
@@ -243,5 +317,5 @@ if __name__ == '__main__':
     print('producers: {}'.format(producers))
 
     # run_experiments(zookeepers, brokers, consumers, producers)
-    run_experiments(nodes, consumers, producers)
+    run_increasing_clients_experiment(nodes, consumers, producers)
 
