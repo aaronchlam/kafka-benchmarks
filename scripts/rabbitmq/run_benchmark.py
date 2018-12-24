@@ -157,11 +157,11 @@ def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir
     clients = {}
     stds = {}
     records_per_consumer = total_records // (len(consumers) * num_instances)
-    for idx, consumer in enumerate(consumers):
+    for idx in range(num_instances):
         output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(consumer))    # TODO: generalize here for more producers
         print('output_path: {}'.format(output_path))
         py_cmd = RUN_CONSUMER_TEMPLATE.format(user=USER, password=PASSWORD, host=nodes[0], queue=QUEUE_PATTERN % (idx),
-                                              num_consumers=num_instances, record_size=RECORD_SIZE,
+                                              num_consumers=1, record_size=RECORD_SIZE,
                                               total_records=records_per_consumer, output=output_path)
         if persistent:
             py_cmd += '--persistent '
