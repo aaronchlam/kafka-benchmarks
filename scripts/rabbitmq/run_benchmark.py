@@ -168,8 +168,8 @@ def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir
         ssh_cmds = SSH_NODE_PY_CMD_TEMPLATE.format(py_cmd=py_cmd)
         print(ssh_cmds)
 
-        clients[consumer] = open_ssh(consumer)
-        stds[consumer] = clients[consumer].exec_command(ssh_cmds)
+        clients[consumers[0]] = open_ssh(consumers[0])
+        stds[consumers[0]] = clients[consumers[0]].exec_command(ssh_cmds)
 
     return clients, stds
 
