@@ -292,7 +292,7 @@ def run_experiments(nodes, consumers, producers):
 
 def run_increasing_clients_experiment(nodes, consumers, producers):
     start_consumers = 1
-    end_consumers = 3
+    end_consumers = 11
     step_consumers = 1
     num_trials = 1
     for num_consumers in range(start_consumers, end_consumers, step_consumers):
@@ -300,6 +300,7 @@ def run_increasing_clients_experiment(nodes, consumers, producers):
         print("number of nodes: {}".format(len(nodes)))
         print("number of producers: {}".format(len(producers)))
         print("number_of consumer: {}".format(len(consumers)))
+        print("number of consumer instances: {}".format(len(num_consumers)))
         for trial in range(num_trials):
             print("\n---- TRIAL {} -----".format(trial))
             run_trial(trial, nodes, consumers, producers, num_consumers, 1, 15)    # TODO: switch the persistent flag here
