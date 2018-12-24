@@ -247,15 +247,15 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
                                                           persistent=persistent)
 
     # run the run_producer.py script
-    producer_clients, producer_stds = run_producer_script(nodes, producers, producer_instances, consumer_instances,
-                                                          TOTAL_RECORDS, producer_throughput, data_dir,
-                                                          persistent=persistent)
+    # producer_clients, producer_stds = run_producer_script(nodes, producers, producer_instances, consumer_instances,
+    #                                                       TOTAL_RECORDS, producer_throughput, data_dir,
+    #                                                       persistent=persistent)
 
-    for producer in producers:
-        print("waiting on producers {} to finish".format(producer))
-        exit_status = producer_stds[producer][1].channel.recv_exit_status()
-        print("producer exist_status: {}".format(exit_status))
-        client = producer_clients[producer].close()
+    # for producer in producers:
+    #     print("waiting on producers {} to finish".format(producer))
+    #     exit_status = producer_stds[producer][1].channel.recv_exit_status()
+    #     print("producer exist_status: {}".format(exit_status))
+    #     client = producer_clients[producer].close()
 
     print("done producers")
 
