@@ -246,7 +246,7 @@ def run_trial(trial_num, nodes, consumers, producers, consumer_instances, produc
     consumer_clients, consumer_stds = run_consumer_script(nodes, consumers, consumer_instances, TOTAL_RECORDS, data_dir,
                                                           persistent=persistent)
 
-    run the run_producer.py script
+    # run the run_producer.py script
     producer_clients, producer_stds = run_producer_script(nodes, producers, producer_instances, consumer_instances,
                                                           TOTAL_RECORDS, producer_throughput, data_dir,
                                                           persistent=persistent)
