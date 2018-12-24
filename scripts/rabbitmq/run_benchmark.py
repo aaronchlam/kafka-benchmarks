@@ -235,7 +235,7 @@ def mkdir_benchmark_results_increasing_clients(num_nodes, num_producers, num_con
 def run_trial(trial_num, nodes, consumers, producers, consumer_instances, producer_instances, producer_throughput,
               persistent=False):
     # create test result directory
-    data_dir = mkdir_benchmark_results(len(nodes), len(producers), len(consumers), producer_throughput, trial_num,
+    data_dir = mkdir_benchmark_results(len(nodes), len(producers), consumer_instances, producer_throughput, trial_num,
                                        persistent=persistent)
 
     # start vmstat & iostat
@@ -303,7 +303,7 @@ def run_increasing_clients_experiment(nodes, consumers, producers):
         print("number of consumer instances: {}".format(num_consumers))
         for trial in range(num_trials):
             print("\n---- TRIAL {} -----".format(trial))
-            run_trial(trial, nodes, consumers, producers, num_consumers, 1, 15)    # TODO: switch the persistent flag here
+            run_trial(trial, nodes, consumers, producers, num_consumers, 1, 20)    # TODO: switch the persistent flag here
             print("------------------\n\n")
 
 
