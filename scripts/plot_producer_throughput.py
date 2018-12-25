@@ -222,5 +222,6 @@ if __name__ == '__main__':
     plt.xlabel('Producer Throughput (MB/s)')
     plt.title('producers=1, consumers=1, topics=1, partitions=1, record-size=512 bytes')
     plt.legend()
-    plt.draw()
-    plt.savefig('./producer_throughput.eps', bbox_inches='tight')
+    plt.show()
+    #plt.draw()
+    #plt.savefig('./producer_throughput.eps', bbox_inches='tight')
