@@ -291,7 +291,7 @@ def run_experiments(nodes, consumers, producers):
 
 
 def run_increasing_clients_experiment(nodes, consumers, producers):
-    start_consumers = 6
+    start_consumers = 1
     end_consumers = 15
     step_consumers = 1
     num_trials = 1
