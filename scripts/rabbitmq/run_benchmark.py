@@ -156,7 +156,7 @@ def run_producer_script(nodes, producers, num_instances, num_consumers, total_re
 def run_consumer_script(nodes, consumers, num_instances, total_records, data_dir, persistent=False):
     clients = {}
     stds = {}
-    records_per_consumer = total_records // (len(consumers) * num_instances)
+    records_per_consumer = total_records
     for idx in range(num_instances):
         output_path = os.path.join(data_dir, 'consumer-{}.txt'.format(idx))    # TODO: generalize here for more producers
         print('output_path: {}'.format(output_path))
